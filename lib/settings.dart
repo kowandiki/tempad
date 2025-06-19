@@ -15,7 +15,6 @@ class _SettingsPageState extends State<SettingsPage> {
   final FlutterTts flutterTts = FlutterTts();
 
   String ttsEngineValue = "None";
-  late Map ttsEngine;
   List<String> ttsEngineList = <String>[];
 
   String ttsVoiceValue = "None";
@@ -23,49 +22,40 @@ class _SettingsPageState extends State<SettingsPage> {
   List<String> ttsVoiceList = <String>[];
 
   void _updateLists() async {
-    ttsEngineList = (await flutterTts.getEngines as List)
-        .map((e) => e.toString())
-        .toList();
 
     final prefs = await SharedPreferences.getInstance();
 
     if (prefs.getString("engine")?.isEmpty ?? true) {
       
       // Use the default values if shared preferences does not exist
-      ttsEngineValue = (await flutterTts.getDefaultEngine)?.toString() ?? '';
+      ttsEngineValue = (await flutterTts.getDefaultEngine)?.toString() ?? "";
     } else {
       
       // use the value saved otherwise
-      ttsEngineValue = prefs.getString("engine")!;
+      ttsEngineValue = prefs.getString("engine")!.replaceAll(RegExp("^['\"]|['\"]\$"), '');
     }
 
 
-    if (prefs.getString("voice")?.isEmpty ?? true) {
-      
-      ttsVoiceValue = (await flutterTts.getDefaultVoice)?.toString() ?? "";
-    } else {
+    ttsEngineList = (await flutterTts.getEngines as List)
+      .map((e) => e.toString())
+      .toList();
 
-      // ttsVoiceValue = 
+    // Use the default values if shared preferences does not exist
+    if (prefs.getString("voice")?.isEmpty ?? true) {
+      debugPrint("Using default voice");
+      ttsVoiceValue = (await flutterTts.getDefaultVoice)?["name"].toString() ?? "";
+    } else {
+      
+      debugPrint("Loading voice from shared prefs");
+      ttsVoiceValue = json.decode(prefs.getString("voice")!)["name"].toString().replaceAll(RegExp("^['\"]|['\"]\$"), '');
+
+      debugPrint(ttsVoiceValue);
     }
 
     ttsVoiceList = (await flutterTts.getVoices as List)
-        .where(
-          (e) =>
-            (
-              // This filtering only works with googles TTS engine
-              // Alternatives to this should be looked into
-              e["name"].toString().endsWith("language") &&
-              e["quality"] == "high" &&
-              e["network_required"] == "0" &&
-              e["latency"] == "low"
-            ),
-        )
-        .map((e) => e["name"].toString())
-        .toList();
-
-    // Use the default values if shared preferences does not exist
-    ttsVoice = await flutterTts.getDefaultVoice;
-    ttsVoiceValue = ttsVoice["name"] == null ? "None" : ttsVoice["name"]!;
+      .map((e) => e["name"].toString())
+      .toList()
+      ..sort();
 
     setState(() {});
   }
@@ -75,7 +65,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     debugPrint("ENGINE ${json.encode(await flutterTts.getDefaultEngine)}");
 
-    prefs.setString("engine", json.encode(ttsEngine));
+    prefs.setString("engine", json.encode(ttsEngineValue));
   }
 
   void _updateSavedVoice() async {
@@ -113,46 +103,68 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       body: Padding(
         padding: EdgeInsetsGeometry.all(10),
-        child: Column(
+        child: Table(
+          columnWidths: {
+            0: IntrinsicColumnWidth(),
+            1: FlexColumnWidth(),
+          },
           children: [
-            DropdownButton(
-              value: ttsEngineValue,
-              alignment: AlignmentDirectional.topStart,
-              items: ttsEngineList.map<DropdownMenuItem<String>>((
-                String value,
-              ) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
 
-              onChanged: (String? value) {
-                setState(() {
-                  ttsEngineValue = value!;
-                  _updateSavedEngine();
-                });
-              },
+            TableRow(
+              children: [
+                Text("TTS Engine"),
+
+                DropdownButton(
+                  value: ttsEngineValue,
+                  icon: SizedBox.shrink(),
+                  alignment: AlignmentDirectional.topStart,
+                  items: ttsEngineList.map<DropdownMenuItem<String>>((
+                    String value,
+                  ) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+
+                  onChanged: (String? value) {
+                    setState(() {
+                      ttsEngineValue = value!;
+                      _updateSavedEngine();
+                    });
+                  },
+                ),
+
+              ],
             ),
+            
+            TableRow(
+              children: [
+                Text("Voice"),
 
-            DropdownButton(
-              value: ttsVoiceValue,
-              alignment: AlignmentDirectional.topStart,
-              items: ttsVoiceList.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
+                DropdownButton(
+                  value: ttsVoiceValue,
+                  icon: SizedBox.shrink(),
+                  alignment: AlignmentDirectional.topStart,
+                  items: ttsVoiceList.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
 
-              onChanged: (String? value) {
-                setState(() {
-                  ttsVoiceValue = value!;
+                  onChanged: (String? value) {
+                    setState(() {
+                      ttsVoiceValue = value!;
 
-                  _updateSavedVoice();
-                });
-              },
-            ),
+                      _updateSavedVoice();
+                    });
+                  },
+                ),
+                
+              ]
+            )
+            
           ],
         ),
       ),

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bloknot/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -61,6 +63,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   String _deletedText = "";
   bool _visible = true;
 
+  final Color _enabledColor = Colors.white;
+  final Color _disabledColor = const Color.fromARGB(255, 187, 187, 187);
+
+  Color _speakTextButtonColor = Colors.white;
+
   double _fontSize = 20;
 
   void _setValues() async {
@@ -95,8 +102,24 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     _setValues();
-    flutterTts.setEngine(flutterTts.getDefaultEngine.toString());
+    _checkAvailabilityOfTts();
     WidgetsBinding.instance.addObserver(this);
+  }
+
+  void _checkAvailabilityOfTts() async {
+
+    if (await flutterTts.getDefaultEngine == null) {
+      
+      setState(() {
+        _speakTextButtonColor = _disabledColor;
+      });
+
+    } else {
+
+      setState(() {
+      _speakTextButtonColor = _enabledColor;
+    });
+    }
   }
 
   @override
@@ -172,22 +195,26 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
 
 
-    // final prefs = await SharedPreferences.getInstance();
+    if (await flutterTts.getDefaultEngine == null) {
+      debugPrint("No TTS engine");
+      return;
+    }
 
-    // final encodedVoiceString = prefs.getString("voice");
+    final prefs = await SharedPreferences.getInstance();
 
-    // if (encodedVoiceString != null && encodedVoiceString.isNotEmpty) {
+    final encodedVoiceString = prefs.getString("voice");
 
-    //   debugPrint(encodedVoiceString);
-    //   // Need to do this abomination to convert the string to a map
-    //   Map<String, String> voice =
-    //       (json.decode(encodedVoiceString) as Map<String, dynamic>).map(
-    //         (key, value) => MapEntry(key.toString(), value.toString()),
-    //       );
+    if (encodedVoiceString != null && encodedVoiceString.isNotEmpty) {
 
-    //   await flutterTts.setVoice(voice);
-    // }
+      // Need to do this abomination to convert the string to a map
+      Map<String, String> voice =
+          (json.decode(encodedVoiceString) as Map<String, dynamic>).map(
+            (key, value) => MapEntry(key.toString(), value.toString()),
+          );
 
+      await flutterTts.setVoice(voice);
+    }
+    
     await flutterTts.speak(_controller.text);
   }
 
@@ -275,7 +302,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
                         IconButton(
                           icon: const Icon(Icons.campaign),
-                          color: Colors.white,
+                          color: _speakTextButtonColor,
                           tooltip: "Text to Speech",
                           onPressed: () {
                             _speakText();
