@@ -19,21 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
+
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
@@ -43,15 +29,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -235,6 +212,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               padding: EdgeInsetsGeometry.fromLTRB(10, 0, 0, 0),
               child: Row(
                 children: [
+                  
+                  // Main text field
                   Expanded(
                     child: TextField(
                       expands: true,
@@ -247,59 +226,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     ),
                   ),
 
+                  // Button Bar on the right
                   Container(
-                    // height: double.infinity,
                     color: Colors.blue,
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.delete_forever),
-                          color: Colors.white,
-                          tooltip: "clear all text",
-                          onPressed: _clearText,
-                        ),
 
-                        Container(height: 0),
-
-                        IconButton(
-                          icon: const Icon(Icons.undo),
-                          color: Colors.white,
-                          tooltip: "Restores the deleted text",
-                          onPressed: _restoreText,
-                        ),
-
-                        Flexible(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(maxHeight: 60),
-                            child: Container(),
-                          ),
-                        ),
-
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          color: Colors.white,
-                          tooltip: "increase font size",
-                          onPressed: () {
-                            setState(_incrementFontSize);
-                          },
-                        ),
-
-                        IconButton(
-                          icon: const Icon(Icons.remove),
-                          color: Colors.white,
-                          tooltip: "decrease font size",
-                          onPressed: () {
-                            setState(_decrementFontSize);
-                          },
-                        ),
-
-                        Flexible(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(maxHeight: 60),
-                            child: Container(),
-                          ),
-                        ),
-
+                        // ======================================= //
+                        // TTS Button
                         IconButton(
                           icon: const Icon(Icons.campaign),
                           color: _speakTextButtonColor,
@@ -308,6 +244,65 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             _speakText();
                           },
                         ),
+                        // ======================================= //
+
+                        Flexible(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxHeight: 60),
+                            child: Container(),
+                          ),
+                        ),
+
+                        // ======================================= //
+                        // Increase Font size
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          color: Colors.white,
+                          tooltip: "increase font size",
+                          onPressed: () {
+                            setState(_incrementFontSize);
+                          },
+                        ),
+                        
+                        // Decrease font size
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          color: Colors.white,
+                          tooltip: "decrease font size",
+                          onPressed: () {
+                            setState(_decrementFontSize);
+                          },
+                        ),
+                        // ======================================= //
+
+                        Flexible(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxHeight: 60),
+                            child: Container(),
+                          ),
+                        ),
+
+                        
+
+                        // ======================================= //
+                        // Undo
+                        IconButton(
+                          icon: const Icon(Icons.undo),
+                          color: Colors.white,
+                          tooltip: "Restores the deleted text",
+                          onPressed: _restoreText,
+                        ),
+
+                        Container(height: 20),
+
+                        // Delete
+                        IconButton(
+                          icon: const Icon(Icons.delete_forever),
+                          color: Colors.white,
+                          tooltip: "clear all text",
+                          onPressed: _clearText,
+                        ),
+                        // ======================================= //
 
                         // Flexible(
                         //   child: ConstrainedBox(
@@ -319,6 +314,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // Instead of just pushing the icon to the bottom,
                         // each one of these just puts it halfway between the bottom and the previous widget,
                         // but by having this many, the original intended effect is achieved
+                        // Expanded(child: Container()),
                         Expanded(child: Container()),
                         Expanded(child: Container()),
                         Expanded(child: Container()),
@@ -327,6 +323,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         Expanded(child: Container()),
                         Expanded(child: Container()),
                         Expanded(child: Container()),
+                        
 
                         IconButton(
                           icon: const Icon(Icons.settings),
@@ -341,6 +338,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             );
                           },
                         ),
+
+                        ConstrainedBox(constraints: BoxConstraints(minHeight: 20))
                       ],
                     ),
                   ),
