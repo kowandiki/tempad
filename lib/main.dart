@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:bloknot/image_deck.dart';
 import 'package:bloknot/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -38,10 +40,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   String _deletedText = "";
+  List<String> _deletedUrls = [];
   bool _visible = true;
+  bool _deleteOnVisibilityLossBypass = false; // This is so that when selecting an image, all text is not deleted
 
   final Color _enabledColor = Colors.white;
   final Color _disabledColor = const Color.fromARGB(255, 187, 187, 187);
+
+  final ImagePicker _picker = ImagePicker();
+  List<String> _imageUrls = [];
 
   Color _speakTextButtonColor = Colors.white;
 
@@ -101,18 +108,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if ((state == AppLifecycleState.inactive ||
-            state == AppLifecycleState.hidden ||
-            state == AppLifecycleState.paused ||
-            state == AppLifecycleState.detached) &&
-        _visible) {
+    if ((
+      state == AppLifecycleState.inactive ||
+      state == AppLifecycleState.hidden ||
+      state == AppLifecycleState.paused ||
+      state == AppLifecycleState.detached) &&
+      _visible &&
+      !_deleteOnVisibilityLossBypass
+    ) {
       _visible = false;
-      setState(() {
-        if (_controller.text.isNotEmpty) {
-          _deletedText = _controller.text;
-          _controller.text = "";
-        }
-      });
+      _clearText();
     } else {
       _visible = true;
     }
@@ -150,20 +155,30 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void _clearText() {
-    HapticFeedback.mediumImpact();
+
+    if (_visible) {
+      HapticFeedback.mediumImpact();
+    }
 
     if (_controller.text.isEmpty) {
       return;
     }
 
     _deletedText = _controller.text;
+    _deletedUrls = _imageUrls;
 
     _controller.clear();
+    _imageUrls = [];
+
+    setState((){});
   }
 
   void _restoreText() {
     HapticFeedback.mediumImpact();
     _controller.text = _deletedText;
+    _imageUrls = _deletedUrls;
+
+    setState((){});
   }
 
   void _speakText() async {
@@ -195,159 +210,233 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     await flutterTts.speak(_controller.text);
   }
 
+  void _pickAndAddPictureFromGallery() async {
+
+    _deleteOnVisibilityLossBypass = true;
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    
+    if (image == null) {
+      return;
+    } 
+
+    _deleteOnVisibilityLossBypass = false;
+    
+    _imageUrls.add(image.path);
+    setState((){});
+    
+  }
+
+  void _pickAndAddPictureFromCamera() async {
+
+    _deleteOnVisibilityLossBypass = true;
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    
+    if (image == null) {
+      return;
+    } 
+
+    _deleteOnVisibilityLossBypass = false;
+    
+    _imageUrls.add(image.path);
+    setState((){});
+  }
+
+  void _removeImage(String url) {
+
+    setState(() {
+      _imageUrls.remove(url);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Container(
-          //   height: MediaQuery.of(context).padding.top,
-          //   color: Colors.blue,
-          // ),
-          SafeArea(
-            left: false,
-            right: false,
-            bottom: false,
-            child: Padding(
-              padding: EdgeInsetsGeometry.fromLTRB(10, 0, 0, 0),
-              child: Row(
+      body: SafeArea(
+        left: false,
+        right: false,
+        bottom: false,
+        child: Row(
+          children: [
+            
+            // Column to stack image preview and text
+            Expanded(
+              child: Column(
                 children: [
-                  
-                  // Main text field
+
+                  // Text field
                   Expanded(
-                    child: TextField(
-                      expands: true,
-                      autofocus: true,
-                      focusNode: _focusNode,
-                      controller: _controller,
-                      maxLines: null,
-                      minLines: null,
-                      style: TextStyle(fontSize: _fontSize),
+                    child: Padding( 
+                      padding: EdgeInsetsGeometry.fromLTRB(10,0,0,0),
+                      child: TextField(
+                        expands: true,
+                        autofocus: true,
+                        focusNode: _focusNode,
+                        controller: _controller,
+                        maxLines: null,
+                        minLines: null,
+                        style: TextStyle(fontSize: _fontSize),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  // Image preview section
+                  Visibility(
+                    visible: _imageUrls.isNotEmpty,
+                    child: GestureDetector(
+                      
+                      child: Container(
+                        // color: const Color.fromARGB(255, 209, 209, 209),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: <Color>[
+                              Color(0xffaaaaaa),
+                              Color(0xffdddddd),
+                              Color(0x55ffffff)
+                            ]
+                          )
+                        ),
+                        child: ImageDeck(
+                          imageUrls: _imageUrls,
+                          onRemove: _removeImage,
+                        )
+                      )
+                    ),
+                  ),
+                ]
+              )
+            ),
+            
+            
+
+            // Button Bar on the right
+            Container(
+              color: Colors.blue,
+              child: Column(
+                children: [
+
+                  // ======================================= //
+                  // TTS Button
+                  IconButton(
+                    icon: const Icon(Icons.campaign),
+                    color: _speakTextButtonColor,
+                    tooltip: "Text to Speech",
+                    onPressed: () {
+                      _speakText();
+                    },
+                  ),
+                  // ======================================= //
+
+                  Flexible(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: 60),
+                      child: Container(),
                     ),
                   ),
 
-                  // Button Bar on the right
-                  Container(
-                    color: Colors.blue,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
+                  // ======================================= //
+                  // Increase Font size
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    color: Colors.white,
+                    tooltip: "increase font size",
+                    onPressed: () {
+                      setState(_incrementFontSize);
+                    },
+                  ),
+                  
+                  // Decrease font size
+                  IconButton(
+                    icon: const Icon(Icons.remove),
+                    color: Colors.white,
+                    tooltip: "decrease font size",
+                    onPressed: () {
+                      setState(_decrementFontSize);
+                    },
+                  ),
+                  // ======================================= //
 
-                        // ======================================= //
-                        // TTS Button
-                        IconButton(
-                          icon: const Icon(Icons.campaign),
-                          color: _speakTextButtonColor,
-                          tooltip: "Text to Speech",
-                          onPressed: () {
-                            _speakText();
-                          },
-                        ),
-                        // ======================================= //
-
-                        Flexible(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(maxHeight: 60),
-                            child: Container(),
-                          ),
-                        ),
-
-                        // ======================================= //
-                        // Increase Font size
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          color: Colors.white,
-                          tooltip: "increase font size",
-                          onPressed: () {
-                            setState(_incrementFontSize);
-                          },
-                        ),
-                        
-                        // Decrease font size
-                        IconButton(
-                          icon: const Icon(Icons.remove),
-                          color: Colors.white,
-                          tooltip: "decrease font size",
-                          onPressed: () {
-                            setState(_decrementFontSize);
-                          },
-                        ),
-                        // ======================================= //
-
-                        Flexible(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(maxHeight: 60),
-                            child: Container(),
-                          ),
-                        ),
-
-                        
-
-                        // ======================================= //
-                        // Undo
-                        IconButton(
-                          icon: const Icon(Icons.undo),
-                          color: Colors.white,
-                          tooltip: "Restores the deleted text",
-                          onPressed: _restoreText,
-                        ),
-
-                        Container(height: 20),
-
-                        // Delete
-                        IconButton(
-                          icon: const Icon(Icons.delete_forever),
-                          color: Colors.white,
-                          tooltip: "clear all text",
-                          onPressed: _clearText,
-                        ),
-                        // ======================================= //
-
-                        // Flexible(
-                        //   child: ConstrainedBox(
-                        //     constraints: BoxConstraints(maxHeight: 10),
-                        //     child: Container()
-                        //   )
-                        // ),
-
-                        // Instead of just pushing the icon to the bottom,
-                        // each one of these just puts it halfway between the bottom and the previous widget,
-                        // but by having this many, the original intended effect is achieved
-                        // Expanded(child: Container()),
-                        Expanded(child: Container()),
-                        Expanded(child: Container()),
-                        Expanded(child: Container()),
-                        Expanded(child: Container()),
-                        Expanded(child: Container()),
-                        Expanded(child: Container()),
-                        Expanded(child: Container()),
-                        Expanded(child: Container()),
-                        
-
-                        IconButton(
-                          icon: const Icon(Icons.settings),
-                          color: Colors.white,
-                          tooltip: "Settings",
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SettingsPage(),
-                              ),
-                            );
-                          },
-                        ),
-
-                        ConstrainedBox(constraints: BoxConstraints(minHeight: 20))
-                      ],
+                  Flexible(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: 60),
+                      child: Container(),
                     ),
                   ),
+
+                  
+
+                  // ======================================= //
+                  // Undo
+                  IconButton(
+                    icon: const Icon(Icons.undo),
+                    color: Colors.white,
+                    tooltip: "Restores the deleted text",
+                    onPressed: _restoreText,
+                  ),
+
+                  Container(height: 20),
+
+                  // Delete
+                  IconButton(
+                    icon: const Icon(Icons.delete_forever),
+                    color: Colors.white,
+                    tooltip: "clear all text",
+                    onPressed: _clearText,
+                  ),
+                  // ======================================= //
+
+
+                  Expanded(child: Container()),
+                  Expanded(child: Container()),
+
+
+                  // ======================================= //
+                  // Select Image
+                  IconButton(
+                    icon: const Icon(Icons.add_a_photo),
+                    color: Colors.white,
+                    onPressed: _pickAndAddPictureFromGallery,
+                    onLongPress: _pickAndAddPictureFromCamera,
+                  ),
+
+                  // ======================================= //
+
+                  // Instead of just pushing the icon to the bottom,
+                  // each one of these just puts it halfway between the bottom and the previous widget,
+                  // but by having this many, the original intended effect is achieved
+                  // Expanded(child: Container()),
+                  Expanded(child: Container()),
+                  Expanded(child: Container()),
+                  Expanded(child: Container()),
+                  Expanded(child: Container()),
+                  
+
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    color: Colors.white,
+                    tooltip: "Settings",
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsPage(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  ConstrainedBox(constraints: BoxConstraints(minHeight: 20))
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
