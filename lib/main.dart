@@ -248,6 +248,83 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     });
   }
 
+  void _goForwardOneChar() {
+
+    if (_controller.selection.end == _controller.text.length) {
+      return;
+    }
+
+    _controller.selection = TextSelection.collapsed(offset: _controller.selection.end + 1);
+
+  }
+
+  void _goForwardOneWord() {
+
+    if (_controller.selection.end == _controller.text.length) {
+      return;
+    }
+
+    // should move to the end of the current word. Do not move past any spaces afterwards
+    // basically just go until the first space is encountered (once a nonspace character is encountered)
+    bool charEncountered = false;
+    int index = _controller.selection.end;
+
+    for (; index < _controller.text.length; index++) {
+
+      if (!charEncountered && _controller.text[index] == " ") {
+        continue;
+      }
+
+      if (_controller.text[index] != " ") {
+        charEncountered = true;
+        continue;
+      }
+
+      break;
+    }
+
+    _controller.selection = TextSelection.collapsed(offset: index);
+  }
+
+  void _goBackwardOneChar() {
+
+    if (_controller.selection.start == 0) {
+      return;
+    }
+
+    _controller.selection = TextSelection.collapsed(offset: _controller.selection.start - 1);
+
+  }
+
+  void _goBackwardOneWord() {
+
+    if (_controller.selection.start == 0) {
+      return;
+    }
+
+    // should move to the end of the current word. Do not move past any spaces afterwards
+    // basically just go until the first space is encountered (once a nonspace character is encountered)
+    bool charEncountered = false;
+    int index = _controller.selection.start - 1;
+
+    for (; index != 0; index--) {
+      debugPrint("$index");
+      if (!charEncountered && _controller.text[index] == " ") {
+        continue;
+      }
+
+      if (_controller.text[index] != " ") {
+        charEncountered = true;
+        continue;
+      }
+
+      break;
+    }
+      debugPrint("$index");
+
+    _controller.selection = TextSelection.collapsed(offset: index);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -309,6 +386,70 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                       )
                     ),
                   ),
+
+                  // Button Bar on the bottom
+                  Container(
+                    color: Colors.blue,
+                    child: Row(
+                      children: [
+                        
+                        Padding(padding: EdgeInsets.only(left: 20),),
+
+                        // ======================================= //
+                        // change text position back 1 word
+                        IconButton(
+                          icon: const Icon(Icons.keyboard_double_arrow_left),
+                          color: Colors.white,
+                          tooltip: "Go back 1 word",
+                          onPressed: () {
+                            _goBackwardOneWord();
+                          },
+                        ),
+                        // ======================================= //
+
+                        // ======================================= //
+                        // change text position back 1 character
+                        IconButton(
+                          icon: const Icon(Icons.keyboard_arrow_left),
+                          color: Colors.white,
+                          tooltip: "Go back 1 character",
+                          onPressed: () {
+                            _goBackwardOneChar();
+                          },
+                        ),
+                        // ======================================= //
+
+                        Expanded(child: Container()),
+
+                        // ======================================= //
+                        // change text position forward 1 character
+                        IconButton(
+                          icon: const Icon(Icons.keyboard_arrow_right),
+                          color: Colors.white,
+                          tooltip: "Go forward 1 character",
+                          onPressed: () {
+                            _goForwardOneChar();
+                          },
+                        ),
+                        // ======================================= //
+
+                        // ======================================= //
+                        // change text position forward 1 word
+                        IconButton(
+                          icon: const Icon(Icons.keyboard_double_arrow_right),
+                          color: Colors.white,
+                          tooltip: "Go back 1 word",
+                          onPressed: () {
+                            _goForwardOneWord();
+                          },
+                        ),
+                        // ======================================= //
+
+                        Padding(padding: EdgeInsets.only(right: 20),),
+
+                      ]
+                    )
+                  ),
                 ]
               )
             ),
@@ -320,6 +461,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               color: Colors.blue,
               child: Column(
                 children: [
+
+                  Expanded(child: Container()),
 
                   // ======================================= //
                   // TTS Button
@@ -333,12 +476,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                   // ======================================= //
 
-                  Flexible(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxHeight: 60),
-                      child: Container(),
-                    ),
-                  ),
+                  Expanded(child: Container()),
 
                   // ======================================= //
                   // Increase Font size
@@ -362,39 +500,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                   // ======================================= //
 
-                  Flexible(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxHeight: 60),
-                      child: Container(),
-                    ),
-                  ),
-
-                  
-
-                  // ======================================= //
-                  // Undo
-                  IconButton(
-                    icon: const Icon(Icons.undo),
-                    color: Colors.white,
-                    tooltip: "Restores the deleted text",
-                    onPressed: _restoreText,
-                  ),
-
-                  Container(height: 20),
-
-                  // Delete
-                  IconButton(
-                    icon: const Icon(Icons.delete_forever),
-                    color: Colors.white,
-                    tooltip: "clear all text",
-                    onPressed: _clearText,
-                  ),
-                  // ======================================= //
-
-
                   Expanded(child: Container()),
-                  Expanded(child: Container()),
-
 
                   // ======================================= //
                   // Select Image
@@ -407,16 +513,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
                   // ======================================= //
 
-                  // Instead of just pushing the icon to the bottom,
-                  // each one of these just puts it halfway between the bottom and the previous widget,
-                  // but by having this many, the original intended effect is achieved
-                  // Expanded(child: Container()),
-                  Expanded(child: Container()),
-                  Expanded(child: Container()),
-                  Expanded(child: Container()),
                   Expanded(child: Container()),
                   
-
+                  // ======================================= //
+                  // Settings
                   IconButton(
                     icon: const Icon(Icons.settings),
                     color: Colors.white,
@@ -430,8 +530,29 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                       );
                     },
                   ),
+                  // ======================================= //
 
-                  ConstrainedBox(constraints: BoxConstraints(minHeight: 20))
+                  Expanded(child: Container()),
+
+                  // ======================================= //
+                  // Undo
+                  IconButton(
+                    icon: const Icon(Icons.undo),
+                    color: Colors.white,
+                    tooltip: "Restores the deleted text",
+                    onPressed: _restoreText,
+                  ),
+
+
+                  // Delete
+                  IconButton(
+                    icon: const Icon(Icons.delete_forever),
+                    color: Colors.white,
+                    tooltip: "clear all text",
+                    onPressed: _clearText,
+                  ),
+                  // ======================================= //
+
                 ],
               ),
             ),
