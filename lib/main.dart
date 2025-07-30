@@ -264,8 +264,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       return;
     }
 
-    // should move to the end of the current word. Do not move past any spaces afterwards
-    // basically just go until the first space is encountered (once a nonspace character is encountered)
     bool charEncountered = false;
     int index = _controller.selection.end;
 
@@ -302,13 +300,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       return;
     }
 
-    // should move to the end of the current word. Do not move past any spaces afterwards
-    // basically just go until the first space is encountered (once a nonspace character is encountered)
     bool charEncountered = false;
     int index = _controller.selection.start - 1;
 
     for (; index != 0; index--) {
-      debugPrint("$index");
+
       if (!charEncountered && _controller.text[index] == " ") {
         continue;
       }
@@ -317,10 +313,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         charEncountered = true;
         continue;
       }
-
+      index++;
       break;
     }
-      debugPrint("$index");
 
     _controller.selection = TextSelection.collapsed(offset: index);
   }
