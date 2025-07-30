@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bloknot/image_deck.dart';
 import 'package:bloknot/settings.dart';
+import 'package:bloknot/workspace_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -39,8 +40,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
-  String _deletedText = "";
-  List<String> _deletedUrls = [];
   bool _visible = true;
   bool _deleteOnVisibilityLossBypass = false; // This is so that when selecting an image, all text is not deleted
 
@@ -53,6 +52,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   Color _speakTextButtonColor = Colors.white;
 
   double _fontSize = 20;
+
+  int _currentWorkspace = 0;
+  final List<String> _workspaceText = ["", "", "", "", ""];
+  final List<String> _workspaceDeletedText = ["", "", "", "", ""];
+  final List<List<String>> _workspaceDeletedUrls = [[],[],[],[],[]];
 
   void _setValues() async {
     final prefs = await SharedPreferences.getInstance();
@@ -160,12 +164,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       HapticFeedback.mediumImpact();
     }
 
-    if (_controller.text.isEmpty) {
+    if (_controller.text.isEmpty && _imageUrls.isEmpty) {
       return;
     }
 
-    _deletedText = _controller.text;
-    _deletedUrls = _imageUrls;
+    _workspaceDeletedText[_currentWorkspace] = _controller.text;
+    _workspaceDeletedUrls[_currentWorkspace] = _imageUrls;
 
     _controller.clear();
     _imageUrls = [];
@@ -175,8 +179,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   void _restoreText() {
     HapticFeedback.mediumImpact();
-    _controller.text = _deletedText;
-    _imageUrls = _deletedUrls;
+    _controller.text = _workspaceDeletedText[_currentWorkspace];
+    _imageUrls = _workspaceDeletedUrls[_currentWorkspace];
 
     setState((){});
   }
@@ -320,6 +324,48 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _controller.selection = TextSelection.collapsed(offset: index);
   }
 
+  void _changeTextWorkspace() async {
+    
+    int? result = await showDialog(
+      context: context, 
+      builder: (BuildContext context) { return WorkspaceDialog(clearWorkspaceText: _clearWorkspace,); }
+    );
+
+    if (result == null) {
+      return;
+    }
+
+    debugPrint("Switching from workspace $_currentWorkspace to workspace $result");
+
+    setState((){
+      _workspaceText[_currentWorkspace] = _controller.text;
+
+      _currentWorkspace = result;
+
+      _controller.text = _workspaceText[_currentWorkspace];
+    });
+    
+  }
+
+  void _clearWorkspace(int workspaceID) {
+    debugPrint("deleting workspace $workspaceID");
+
+    if (workspaceID == _currentWorkspace) {
+  
+      _workspaceDeletedText[workspaceID] = _controller.text;
+      _workspaceText[workspaceID] = "";
+      _controller.text = "";
+      setState((){});
+
+    } else {
+  
+      _workspaceDeletedText[workspaceID] = _workspaceText[workspaceID];
+      _workspaceText[workspaceID] = "";
+  
+    }
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -411,6 +457,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                           onPressed: () {
                             _goBackwardOneChar();
                           },
+                        ),
+                        // ======================================= //
+
+                        Expanded(child: Container()),
+
+                        // ======================================= //
+                        // workspaces / prepared phrases pages
+                        ElevatedButton(
+                          onPressed: _changeTextWorkspace, 
+                          child: Text("workspace $_currentWorkspace")
                         ),
                         // ======================================= //
 
