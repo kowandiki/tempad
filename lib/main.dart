@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:bloknot/image_deck.dart';
 import 'package:bloknot/settings.dart';
+import 'package:bloknot/word.dart';
+import 'package:bloknot/word_prediction.dart';
 import 'package:bloknot/workspace_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,6 +55,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   double _fontSize = 20;
 
+  Map<String, List<Word>> _weights = {};
+
   int _currentWorkspace = 0;
   final List<String> _workspaceText = ["", "", "", "", ""];
   final List<String> _workspaceDeletedText = ["", "", "", "", ""];
@@ -68,6 +72,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         _fontSize = fontSize;
       });
     }
+
+    _weights = await readWeightsFromDevice();
   }
 
   void _saveValues() async {
@@ -122,9 +128,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     ) {
       _visible = false;
       _clearText();
+      // This is to avoid writing large amounts of weights constantly
+      // so instead only doing it when the app goes into the background
+      writeWeightsToDevice(_weights);
     } else {
       _visible = true;
     }
+
+    
   }
 
   @override
@@ -170,6 +181,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     _workspaceDeletedText[_currentWorkspace] = _controller.text;
     _workspaceDeletedUrls[_currentWorkspace] = _imageUrls;
+
+    // update word prediction weights
+    updateWeightsFromSentence(_controller.text, _weights);
 
     _controller.clear();
     _imageUrls = [];
@@ -263,8 +277,52 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void _goForwardOneWord() {
-
+    // if selection.end is the same as text length and this button is pressed,
+    // a predicted word should be inserted (if available)
     if (_controller.selection.end == _controller.text.length) {
+
+      List<String> words = _controller.text.split(" ");
+      String predictedWord = "";
+      String prevWord = "";
+      String curWord = "";
+
+      // if there is only 1 word, prev word is that word
+      // if there is 2 words, but the most recent is empty, prev word is the 1st word
+      // if there are 2 or more words, prev word is the word at maxIndex - 1
+      // ^ curWord is the word at maxIndex
+      int maxIndex = words.length - 1;
+
+      if (maxIndex < 0) {
+        prevWord = " ";
+        curWord = "";
+
+      } 
+      // This means a word is typed but there is no space, so no prevWord still
+      else if (maxIndex == 0) {
+        prevWord = " ";
+        curWord = words[0];
+
+      }
+      else {
+        prevWord = words[maxIndex - 1];
+        curWord = words[maxIndex];
+      }
+
+      // get the predicted word
+      predictedWord = getNextWord(prevWord, curWord, _weights);
+
+      // check if predicted word is finishing the current word, if so, 
+      // remove the overlapping parts of the predicted word
+      if (curWord.isNotEmpty) {
+        predictedWord = predictedWord.substring(curWord.length);
+      }
+
+      debugPrint("prev: $prevWord, cur: $curWord, pred: $predictedWord");
+      debugPrint(_weights.toString());
+      
+      // insert the word and update the selection
+      _controller.text = "${_controller.text}$predictedWord ";
+
       return;
     }
 
@@ -335,8 +393,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       return;
     }
 
-    debugPrint("Switching from workspace $_currentWorkspace to workspace $result");
-
     setState((){
       _workspaceText[_currentWorkspace] = _controller.text;
 
@@ -348,7 +404,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void _clearWorkspace(int workspaceID) {
-    debugPrint("deleting workspace $workspaceID");
 
     if (workspaceID == _currentWorkspace) {
   

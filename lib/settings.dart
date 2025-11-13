@@ -35,7 +35,7 @@ class _SettingsPageState extends State<SettingsPage> {
       ttsEngineValue = prefs.getString("engine")!.replaceAll(RegExp("^['\"]|['\"]\$"), '');
     }
 
-
+    // This is android only, remove display of list on apple products or android phones without TTS engines
     ttsEngineList = (await flutterTts.getEngines as List)
       .map((e) => e.toString())
       .toList();
