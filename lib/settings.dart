@@ -35,7 +35,6 @@ class _SettingsPageState extends State<SettingsPage> {
       ttsEngineValue = prefs.getString("engine")!.replaceAll(RegExp("^['\"]|['\"]\$"), '');
     }
 
-    // This is android only, remove display of list on apple products or android phones without TTS engines
     ttsEngineList = (await flutterTts.getEngines as List)
       .map((e) => e.toString())
       .toList();
@@ -86,6 +85,8 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
 
     _updateLists();
+
+    debugPrint("ENGINE LIST LENGTH ${ttsEngineList.isNotEmpty}");
   }
 
   @override
@@ -109,30 +110,32 @@ class _SettingsPageState extends State<SettingsPage> {
             1: FlexColumnWidth(),
           },
           children: [
-
             TableRow(
               children: [
-                Text("TTS Engine"),
+                Visibility(visible: ttsEngineList.isNotEmpty, child: Text("TTS Engine")),
 
-                DropdownButton(
-                  value: ttsEngineValue,
-                  icon: SizedBox.shrink(),
-                  alignment: AlignmentDirectional.topStart,
-                  items: ttsEngineList.map<DropdownMenuItem<String>>((
-                    String value,
-                  ) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+                Visibility(
+                  visible: ttsEngineList.isNotEmpty,
+                  child: DropdownButton(
+                    value: ttsEngineValue,
+                    icon: SizedBox.shrink(),
+                    alignment: AlignmentDirectional.topStart,
+                    items: ttsEngineList.map<DropdownMenuItem<String>>((
+                      String value,
+                    ) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
 
-                  onChanged: (String? value) {
-                    setState(() {
-                      ttsEngineValue = value!;
-                      _updateSavedEngine();
-                    });
-                  },
+                    onChanged: (String? value) {
+                      setState(() {
+                        ttsEngineValue = value!;
+                        _updateSavedEngine();
+                      });
+                    },
+                  ),
                 ),
 
               ],
@@ -140,31 +143,75 @@ class _SettingsPageState extends State<SettingsPage> {
             
             TableRow(
               children: [
-                Text("Voice"),
+                Visibility(visible: ttsVoiceList.isNotEmpty, child: Text("Voice")),
 
-                DropdownButton(
-                  value: ttsVoiceValue,
-                  icon: SizedBox.shrink(),
-                  alignment: AlignmentDirectional.topStart,
-                  items: ttsVoiceList.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+                Visibility(
+                  visible: ttsVoiceList.isNotEmpty, 
+                  child: DropdownButton(
+                    value: ttsVoiceValue,
+                    icon: SizedBox.shrink(),
+                    alignment: AlignmentDirectional.topStart,
+                    items: ttsVoiceList.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
 
-                  onChanged: (String? value) {
-                    setState(() {
-                      ttsVoiceValue = value!;
+                    onChanged: (String? value) {
+                      setState(() {
+                        ttsVoiceValue = value!;
 
-                      _updateSavedVoice();
-                    });
-                  },
+                        _updateSavedVoice();
+                      });
+                    },
+                  ),
                 ),
                 
               ]
-            )
-            
+            ),
+
+            TableRow(
+              children: [
+                Text("Text Colour"),
+                Text("Placeholder button Location")
+              ]
+            ),
+
+            TableRow(
+              children: [
+                Text("Predicted Text Colour"),
+                Text("Placeholder button Location")
+              ]
+            ),
+
+            TableRow(
+              children: [
+                Text("App Colour"),
+                Text("Placeholder button Location")
+              ]
+            ),
+
+            TableRow(
+              children: [
+                Text("Button/App Text Colour"),
+                Text("Placeholder button Location")
+              ]
+            ),
+
+            TableRow(
+              children: [
+                Text("Disabled Button Colour"),
+                Text("Placeholder button Location")
+              ]
+            ),
+
+            TableRow(
+              children: [
+                Text("Top Bar on Main Page"),
+                Text("Placeholder button Location")
+              ]
+            ),
           ],
         ),
       ),

@@ -408,7 +408,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     
     int? result = await showDialog(
       context: context, 
-      builder: (BuildContext context) { return WorkspaceDialog(clearWorkspaceText: _clearWorkspace,); }
+      builder: (BuildContext context) { 
+        _workspaceText[_currentWorkspace] = _controller.text;
+        return WorkspaceDialog(
+          clearWorkspaceText: _clearWorkspace, 
+          activeWorkspaces: _workspaceText.map((e) => e.isNotEmpty).toList(),
+        ); 
+      }
     );
 
     if (result == null) {
@@ -433,6 +439,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       _workspaceText[workspaceID] = "";
       _controller.text = "";
       setState((){});
+      HapticFeedback.mediumImpact();
 
     } else {
   
