@@ -57,6 +57,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   Map<String, List<Word>> _weights = {};
 
+  String _predictedWord = "";
+
   int _currentWorkspace = 0;
   final List<String> _workspaceText = ["", "", "", "", ""];
   final List<String> _workspaceDeletedText = ["", "", "", "", ""];
@@ -87,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final double _fontSizeStep = 5;
 
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _predictedController = TextEditingController();
 
   final FocusNode _focusNode = FocusNode();
 
@@ -98,6 +101,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _setValues();
     _checkAvailabilityOfTts();
     WidgetsBinding.instance.addObserver(this);
+
+    _controller.addListener(() {
+      _predictNextWord();
+
+      // Only show the word when the selection is at the end
+      // just stops the predicted word from always polluting the space
+      if (_controller.selection.end == _controller.text.length && _controller.text.isNotEmpty) {
+        _predictedController.text = "${_controller.text}$_predictedWord";
+      } else {
+        _predictedController.text = "";
+      }
+    });
   }
 
   void _checkAvailabilityOfTts() async {
@@ -276,13 +291,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   }
 
-  void _goForwardOneWord() {
-    // if selection.end is the same as text length and this button is pressed,
-    // a predicted word should be inserted (if available)
-    if (_controller.selection.end == _controller.text.length) {
-
-      List<String> words = _controller.text.split(" ");
-      String predictedWord = "";
+  void _predictNextWord() {
+    List<String> words = _controller.text.split(" ");
+      // String predictedWord = "";
       String prevWord = "";
       String curWord = "";
 
@@ -309,19 +320,30 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       }
 
       // get the predicted word
-      predictedWord = getNextWord(prevWord, curWord, _weights);
+      _predictedWord = getNextWord(prevWord, curWord, _weights);
 
+      // add space to the end of the word if its predicted
+      if (_predictedWord.isNotEmpty) {
+        _predictedWord = "$_predictedWord ";
+      }
+      
       // check if predicted word is finishing the current word, if so, 
       // remove the overlapping parts of the predicted word
-      if (curWord.isNotEmpty) {
-        predictedWord = predictedWord.substring(curWord.length);
+      if (curWord.length <= _predictedWord.length) {
+        _predictedWord = _predictedWord.substring(curWord.length);
       }
 
-      debugPrint("prev: $prevWord, cur: $curWord, pred: $predictedWord");
-      debugPrint(_weights.toString());
+  }
+
+  void _goForwardOneWord() {
+    // if selection.end is the same as text length and this button is pressed,
+    // a predicted word should be inserted (if available)
+    if (_controller.selection.end == _controller.text.length) {
+
+      _predictNextWord();
       
       // insert the word and update the selection
-      _controller.text = "${_controller.text}$predictedWord ";
+      _controller.text = "${_controller.text}$_predictedWord";
 
       return;
     }
@@ -438,23 +460,45 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
                   // Text field
                   Expanded(
-                    child: Padding( 
-                      padding: EdgeInsetsGeometry.fromLTRB(10,0,0,0),
-                      child: TextField(
-                        expands: true,
-                        autofocus: true,
-                        focusNode: _focusNode,
-                        controller: _controller,
-                        maxLines: null,
-                        minLines: null,
-                        style: TextStyle(fontSize: _fontSize),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          enabledBorder: InputBorder.none,
+                    child: Stack(
+                      children: [
+                        Padding( 
+                          padding: EdgeInsetsGeometry.fromLTRB(10,0,0,0),
+                          child: TextField(
+                            expands: true,
+                            autofocus: false,
+                            // focusNode: _focusNode,
+                            controller: _predictedController,
+                            maxLines: null,
+                            minLines: null,
+                            style: TextStyle(fontSize: _fontSize, color: Colors.grey),
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+
+                        Padding( 
+                          padding: EdgeInsetsGeometry.fromLTRB(10,0,0,0),
+                          child: TextField(
+                            expands: true,
+                            autofocus: true,
+                            focusNode: _focusNode,
+                            controller: _controller,
+                            maxLines: null,
+                            minLines: null,
+                            style: TextStyle(fontSize: _fontSize),
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                      ]
+                    )
                   ),
                   
                   // Image preview section
