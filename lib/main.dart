@@ -45,13 +45,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _visible = true;
   bool _deleteOnVisibilityLossBypass = false; // This is so that when selecting an image, all text is not deleted
 
-  final Color _enabledColor = Colors.white;
-  final Color _disabledColor = const Color.fromARGB(255, 187, 187, 187);
+  bool _doNextWordPrediction = true;
+  bool _showTopBar = false;
 
   final ImagePicker _picker = ImagePicker();
   List<String> _imageUrls = [];
 
-  Color _speakTextButtonColor = Colors.white;
 
   double _fontSize = 20;
 
@@ -75,6 +74,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       });
     }
 
+    _doNextWordPrediction = prefs.getBool("doNextWordPrediction") ?? true;
+
+    _showTopBar = prefs.getBool("showTopBar") ?? false;
+
+    _textColor = Color(prefs.getInt("textColor") ?? _textColor.toARGB32());
+    _predictedTextColor = Color(prefs.getInt("predictedTextColor") ?? _predictedTextColor.toARGB32());
+    _textBackgroundColor = Color(prefs.getInt("textBackgroundColor") ?? _textBackgroundColor.toARGB32());
+    _appColor = Color(prefs.getInt("appColor") ?? _appColor.toARGB32());
+    _appButtonColor = Color(prefs.getInt("appButtonColor") ?? _appButtonColor.toARGB32());
+    _disabledButtonColor = Color(prefs.getInt("disabledButtonColor") ?? _disabledButtonColor.toARGB32());
+
+
     _weights = await readWeightsFromDevice();
   }
 
@@ -87,6 +98,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final double _minFontSize = 15;
   final double _maxFontSize = 60;
   final double _fontSizeStep = 5;
+
+  Color _textColor = Colors.black;
+  Color _predictedTextColor = Colors.grey;
+  Color _textBackgroundColor = Colors.white;
+  Color _appColor = Colors.blue;
+  Color _appButtonColor = Colors.white;
+  Color _disabledButtonColor = const Color.fromARGB(255, 187, 187, 187);
+  Color _speakTextButtonColor = Colors.white;
 
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _predictedController = TextEditingController();
@@ -115,19 +134,101 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     });
   }
 
+  void _toggleNextWordPrediction() async {
+   
+    _doNextWordPrediction = !_doNextWordPrediction;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("doNextWordPrediction", _doNextWordPrediction);
+
+  }
+
+  void _toggleTopBar() async {
+
+    _showTopBar = !_showTopBar;
+    setState((){});
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("showTopBar", _showTopBar);
+
+  }
+
+  void _updateTextColor(int sRGB) async {
+
+    setState(() {
+      _textColor = Color(sRGB);
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt("textColor", _textColor.toARGB32());
+  }
+
+  void _updatePredictedTextColor(int sRGB) async {
+
+    setState(() {
+      _predictedTextColor = Color(sRGB);
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt("predictedTextColor", _predictedTextColor.toARGB32());
+  }
+
+  void _updateTextBackgroundColor(int sRGB) async {
+
+    setState(() {
+      _textBackgroundColor = Color(sRGB);
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt("textBackgroundColor", _textBackgroundColor.toARGB32());
+  }
+
+  void _updateAppColor(int sRGB) async {
+
+    setState(() {
+      _appColor = Color(sRGB);
+    });
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt("appColor", _appColor.toARGB32());
+    
+  }
+
+  void _updateAppButtonColor(int sRGB) async {
+
+    setState(() {
+      _appButtonColor = Color(sRGB);
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt("appButtonColor", _appButtonColor.toARGB32());
+  }
+
+  void _updateDisabledButtonColor(int sRGB) async {
+
+    setState(() {
+      _disabledButtonColor = Color(sRGB);
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt("disabledButtonColor", _disabledButtonColor.toARGB32());
+
+    
+  }
+
   void _checkAvailabilityOfTts() async {
 
     if (await flutterTts.getDefaultEngine == null) {
       
       setState(() {
-        _speakTextButtonColor = _disabledColor;
+        _speakTextButtonColor = _disabledButtonColor;
       });
 
     } else {
 
       setState(() {
-      _speakTextButtonColor = _enabledColor;
-    });
+        _speakTextButtonColor = _appButtonColor;
+      });
     }
   }
 
@@ -292,6 +393,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void _predictNextWord() {
+
+    // do nothing if we aren't predicting the next word
+    if (!_doNextWordPrediction) {
+      return;
+    }
+
     List<String> words = _controller.text.split(" ");
       // String predictedWord = "";
       String prevWord = "";
@@ -453,6 +560,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _textBackgroundColor,
+      appBar: (_showTopBar ? 
+        PreferredSize(
+          preferredSize: Size.fromHeight(0),
+          child: AppBar(
+            backgroundColor: _appColor,
+            elevation: 0
+          ) 
+        ) 
+        : null // No AppBar if _showTopBar is false
+      ),
       body: SafeArea(
         left: false,
         right: false,
@@ -478,7 +596,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             controller: _predictedController,
                             maxLines: null,
                             minLines: null,
-                            style: TextStyle(fontSize: _fontSize, color: Colors.grey),
+                            style: TextStyle(fontSize: _fontSize, color: _predictedTextColor),
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               focusedBorder: InputBorder.none,
@@ -496,7 +614,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             controller: _controller,
                             maxLines: null,
                             minLines: null,
-                            style: TextStyle(fontSize: _fontSize),
+                            style: TextStyle(fontSize: _fontSize, color: _textColor),
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               focusedBorder: InputBorder.none,
@@ -536,7 +654,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
                   // Button Bar on the bottom
                   Container(
-                    color: Colors.blue,
+                    color: _appColor,
                     child: Row(
                       children: [
                         
@@ -546,7 +664,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // change text position back 1 word
                         IconButton(
                           icon: const Icon(Icons.keyboard_double_arrow_left),
-                          color: Colors.white,
+                          color: _appButtonColor,
                           tooltip: "Go back 1 word",
                           onPressed: () {
                             _goBackwardOneWord();
@@ -558,7 +676,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // change text position back 1 character
                         IconButton(
                           icon: const Icon(Icons.keyboard_arrow_left),
-                          color: Colors.white,
+                          color: _appButtonColor,
                           tooltip: "Go back 1 character",
                           onPressed: () {
                             _goBackwardOneChar();
@@ -582,7 +700,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // change text position forward 1 character
                         IconButton(
                           icon: const Icon(Icons.keyboard_arrow_right),
-                          color: Colors.white,
+                          color: _appButtonColor,
                           tooltip: "Go forward 1 character",
                           onPressed: () {
                             _goForwardOneChar();
@@ -594,7 +712,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // change text position forward 1 word
                         IconButton(
                           icon: const Icon(Icons.keyboard_double_arrow_right),
-                          color: Colors.white,
+                          color: _appButtonColor,
                           tooltip: "Go back 1 word",
                           onPressed: () {
                             _goForwardOneWord();
@@ -615,7 +733,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
             // Button Bar on the right
             Container(
-              color: Colors.blue,
+              color: _appColor,
               child: Column(
                 children: [
 
@@ -639,7 +757,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Increase Font size
                   IconButton(
                     icon: const Icon(Icons.add),
-                    color: Colors.white,
+                    color: _appButtonColor,
                     tooltip: "increase font size",
                     onPressed: () {
                       setState(_incrementFontSize);
@@ -649,7 +767,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Decrease font size
                   IconButton(
                     icon: const Icon(Icons.remove),
-                    color: Colors.white,
+                    color: _appButtonColor,
                     tooltip: "decrease font size",
                     onPressed: () {
                       setState(_decrementFontSize);
@@ -663,7 +781,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Select Image
                   IconButton(
                     icon: const Icon(Icons.add_a_photo),
-                    color: Colors.white,
+                    color: _appButtonColor,
                     onPressed: _pickAndAddPictureFromGallery,
                     onLongPress: _pickAndAddPictureFromCamera,
                   ),
@@ -676,13 +794,30 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Settings
                   IconButton(
                     icon: const Icon(Icons.settings),
-                    color: Colors.white,
+                    color: _appButtonColor,
                     tooltip: "Settings",
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const SettingsPage(),
+                          builder: (context) => SettingsPage(
+                            toggleNextWordPrediction: _toggleNextWordPrediction,
+                            nextWordPredictionInit: _doNextWordPrediction,
+                            toggleTopBarOnMainPage: _toggleTopBar,
+                            topBarOnMainPageInit: _showTopBar,
+                            updateTextColor: _updateTextColor,
+                            textColorInit: _textColor.toARGB32(),
+                            updatePredictedTextColor: _updatePredictedTextColor,
+                            predictedTextColorInit: _predictedTextColor.toARGB32(),
+                            updateTextBackgroundColor: _updateTextBackgroundColor,
+                            textBackgroundColorInit: _textBackgroundColor.toARGB32(),
+                            updateAppColor: _updateAppColor,
+                            appColorInit: _appColor.toARGB32(),
+                            updateAppButtonColor: _updateAppButtonColor,
+                            appButtonColorInit: _appButtonColor.toARGB32(),
+                            updateDisabledButtonColor: _updateDisabledButtonColor,
+                            disabledButtonColorInit: _disabledButtonColor.toARGB32(),
+                          ),
                         ),
                       );
                     },
@@ -695,7 +830,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Undo
                   IconButton(
                     icon: const Icon(Icons.undo),
-                    color: Colors.white,
+                    color: _appButtonColor,
                     tooltip: "Restores the deleted text",
                     onPressed: _restoreText,
                   ),
@@ -704,7 +839,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Delete
                   IconButton(
                     icon: const Icon(Icons.delete_forever),
-                    color: Colors.white,
+                    color: _appButtonColor,
                     tooltip: "clear all text",
                     onPressed: _clearText,
                   ),
