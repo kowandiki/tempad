@@ -18,16 +18,18 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  final List<String> fontFamily = const ["EBGaramond"];
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        fontFamily: "NotoSans"
+        // colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Tempad'),
     );
   }
 }
@@ -51,6 +53,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final ImagePicker _picker = ImagePicker();
   List<String> _imageUrls = [];
 
+  String _fontFamily = "NotoSans";
 
   double _fontSize = 20;
 
@@ -85,6 +88,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _appButtonColor = Color(prefs.getInt("appButtonColor") ?? _appButtonColor.toARGB32());
     _disabledButtonColor = Color(prefs.getInt("disabledButtonColor") ?? _disabledButtonColor.toARGB32());
 
+    _fontFamily = prefs.getString("fontFamily") ?? "NotoSans";
 
     _weights = await readWeightsFromDevice();
   }
@@ -132,6 +136,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         _predictedController.text = "";
       }
     });
+  }
+
+  void _updateFontFamily(String fontFamily) async {
+
+    _fontFamily = fontFamily;
+    setState((){});
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("fontFamily", _fontFamily);
   }
 
   void _toggleNextWordPrediction() async {
@@ -596,7 +608,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             controller: _predictedController,
                             maxLines: null,
                             minLines: null,
-                            style: TextStyle(fontSize: _fontSize, color: _predictedTextColor),
+                            style: TextStyle(fontSize: _fontSize, color: _predictedTextColor, fontFamily: _fontFamily),
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               focusedBorder: InputBorder.none,
@@ -614,7 +626,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             controller: _controller,
                             maxLines: null,
                             minLines: null,
-                            style: TextStyle(fontSize: _fontSize, color: _textColor),
+                            style: TextStyle(fontSize: _fontSize, color: _textColor, fontFamily: _fontFamily),
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               focusedBorder: InputBorder.none,
@@ -817,6 +829,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             appButtonColorInit: _appButtonColor.toARGB32(),
                             updateDisabledButtonColor: _updateDisabledButtonColor,
                             disabledButtonColorInit: _disabledButtonColor.toARGB32(),
+                            updateFontFamily: _updateFontFamily,
+                            fontFamilyInit: _fontFamily,
                           ),
                         ),
                       );

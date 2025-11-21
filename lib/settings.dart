@@ -32,6 +32,9 @@ class SettingsPage extends StatefulWidget {
   final void Function(int sRGB) updateDisabledButtonColor;
   final int disabledButtonColorInit;
 
+  final void Function(String fontFamily) updateFontFamily;
+  final String fontFamilyInit;
+
   const SettingsPage({
     super.key,
     required this.toggleNextWordPrediction,
@@ -50,6 +53,8 @@ class SettingsPage extends StatefulWidget {
     required this.appButtonColorInit, 
     required this.updateDisabledButtonColor, 
     required this.disabledButtonColorInit,
+    required this.updateFontFamily,
+    required this.fontFamilyInit,
   });
 
   @override
@@ -71,6 +76,15 @@ class _SettingsPageState extends State<SettingsPage> {
   late Color appColor;
   late Color appButtonColor;
   late Color disabledButtonColor;
+
+  late String fontFamily;
+
+  final List<String> fontFamilies = [
+    "NotoSans",
+    "Roboto",
+    "RobotoMono",
+    "EBGaramond",
+  ];
 
   String ttsVoiceValue = "None";
   late Map ttsVoice;
@@ -152,6 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
     appButtonColor = Color(widget.appButtonColorInit);
     disabledButtonColor = Color(widget.disabledButtonColorInit);
 
+    fontFamily = widget.fontFamilyInit;
 
     debugPrint("ENGINE LIST LENGTH ${ttsEngineList.isNotEmpty}");
   }
@@ -410,8 +425,34 @@ class _SettingsPageState extends State<SettingsPage> {
 
             TableRow(
               children: [
-                Text("Text Font"),
-                Text("Placeholder button Location")
+                TableCell(
+                  verticalAlignment: TableCellVerticalAlignment.middle,
+                  child: Text("Font Family"),
+                ),
+                
+                Align(
+                  alignment: Alignment.center,
+                  child: DropdownButton(
+                    value: fontFamily,
+                    icon: SizedBox.shrink(),
+                    alignment: AlignmentDirectional.topStart,
+                    items: fontFamilies.map<DropdownMenuItem<String>>((
+                      String value,
+                    ) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value, style: TextStyle(fontFamily: value)),
+                      );
+                    }).toList(),
+
+                    onChanged: (String? value) {
+                      setState(() {
+                        fontFamily = value!;
+                        widget.updateFontFamily(value);
+                      });
+                    },
+                  ),
+                ),
               ]
             ),
 
