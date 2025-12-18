@@ -48,6 +48,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _deleteOnVisibilityLossBypass = false; // This is so that when selecting an image, all text is not deleted
 
   bool _doNextWordPrediction = true;
+  bool _doNextWordPredictionTraining = true;
   bool _showTopBar = false;
 
   final ImagePicker _picker = ImagePicker();
@@ -87,12 +88,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     Globals.appColor = Color(prefs.getInt("appColor") ?? Globals.appColor.toARGB32());
     Globals.appButtonColor = Color(prefs.getInt("appButtonColor") ?? Globals.appButtonColor.toARGB32());
     Globals.disabledButtonColor = Color(prefs.getInt("disabledButtonColor") ?? Globals.disabledButtonColor.toARGB32());
-    // Globals.textColor = Color(prefs.getInt("textColor") ?? Globals.textColor.toARGB32());
-    // Globals.predictedTextColor = Color(prefs.getInt("predictedTextColor") ?? Globals.predictedTextColor.toARGB32());
-    // Globals.textBackgroundColor = Color(prefs.getInt("textBackgroundColor") ?? Globals.textBackgroundColor.toARGB32());
-    // Globals.appColor = Color(prefs.getInt("appColor") ?? Globals.appColor.toARGB32());
-    // Globals.appButtonColor = Color(prefs.getInt("appButtonColor") ?? Globals.appButtonColor.toARGB32());
-    // Globals.disabledButtonColor = Color(prefs.getInt("disabledButtonColor") ?? Globals.disabledButtonColor.toARGB32());
 
     _fontFamily = prefs.getString("fontFamily") ?? "NotoSans";
 
@@ -153,6 +148,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool("doNextWordPrediction", _doNextWordPrediction);
 
+  }
+
+  void _toggleNextWordPredictionTraining() async {
+
+    _doNextWordPredictionTraining = !_doNextWordPredictionTraining;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("doNextWordPredictionTraining", _doNextWordPredictionTraining);
   }
 
   void _toggleTopBar() async {
@@ -311,7 +314,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _workspaceDeletedUrls[_currentWorkspace] = _imageUrls;
 
     // update word prediction weights
-    updateWeightsFromSentence(_controller.text, _weights);
+    if (_doNextWordPredictionTraining) {
+      updateWeightsFromSentence(_controller.text, _weights);
+    }
 
     _controller.clear();
     _imageUrls = [];
@@ -815,6 +820,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                           builder: (context) => SettingsPage(
                             toggleNextWordPrediction: _toggleNextWordPrediction,
                             nextWordPredictionInit: _doNextWordPrediction,
+                            toggleNextWordPredictionTraining: _toggleNextWordPredictionTraining,
+                            nextWordPredictionTrainingInit: _doNextWordPredictionTraining,
                             toggleTopBarOnMainPage: _toggleTopBar,
                             topBarOnMainPageInit: _showTopBar,
                             updateTextColor: _updateTextColor,

@@ -12,6 +12,9 @@ class SettingsPage extends StatefulWidget {
   final void Function() toggleNextWordPrediction;
   final bool nextWordPredictionInit;
 
+  final void Function() toggleNextWordPredictionTraining;
+  final bool nextWordPredictionTrainingInit;
+
   final void Function() toggleTopBarOnMainPage;
   final bool topBarOnMainPageInit;
 
@@ -29,6 +32,8 @@ class SettingsPage extends StatefulWidget {
     super.key,
     required this.toggleNextWordPrediction,
     required this.nextWordPredictionInit,
+    required this.toggleNextWordPredictionTraining,
+    required this.nextWordPredictionTrainingInit,
     required this.toggleTopBarOnMainPage,
     required this.topBarOnMainPageInit, 
     required this.updateTextColor, 
@@ -52,6 +57,7 @@ class _SettingsPageState extends State<SettingsPage> {
   List<String> ttsEngineList = <String>[];
 
   bool _nextWordPrediction = false;
+  bool _nextWordPredictionTraining = false;
   bool _topBarOnMainPage = false;
 
   late Color textColor;
@@ -141,6 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _updateLists();
 
     _nextWordPrediction = widget.nextWordPredictionInit;
+    _nextWordPredictionTraining = widget.nextWordPredictionTrainingInit;
     _topBarOnMainPage = widget.topBarOnMainPageInit;
 
     textColor = Color(Globals.textColor.toARGB32());
@@ -481,6 +488,29 @@ class _SettingsPageState extends State<SettingsPage> {
                       _nextWordPrediction = value ?? true;
                     });
                     widget.toggleNextWordPrediction();
+                  },
+                )
+              ]
+            ),
+
+            TableRow(
+              children: [
+                Text("Next Word Prediction Training"),
+                Checkbox(
+                  checkColor: appButtonColor,
+                  shape: RoundedRectangleBorder(),
+                  fillColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+                    if (states.contains(WidgetState.pressed) || states.contains(WidgetState.selected)) {
+                      return appColor;
+                    }
+                    return appButtonColor;
+                  }),
+                  value: _nextWordPredictionTraining, 
+                  onChanged: (value) {
+                    setState(() {
+                      _nextWordPredictionTraining = value ?? true;
+                    });
+                    widget.toggleNextWordPredictionTraining();
                   },
                 )
               ]

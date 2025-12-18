@@ -41,7 +41,7 @@ int indexOfWord(List<Word> wordList, word) {
 /// Function takes a series of words "sentence" and weights and update the weights for each word that occurs in the sentence
 /// Returns the updated weights
 Future<Map<String, List<Word>>> updateWeightsFromSentence(String sentence, Map<String, List<Word>> weights) async {
-
+  
   // split the sentence by spaces. Keep punctuation and capitalization
   List<String> words = sentence.split(" ");
 
@@ -116,7 +116,7 @@ void writeWeightsToDevice(Map<String, List<Word>> weights) async {
 
   final prefs = await SharedPreferences.getInstance();
 
-  prefs.setString("weights", json.encode(weights));
+  await prefs.setString("weights", json.encode(weights));
   
 }
 
