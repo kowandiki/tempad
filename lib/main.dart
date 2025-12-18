@@ -653,6 +653,28 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     double padding = 12.0;
 
+    SettingsPage settingsPageInstance = SettingsPage(
+      toggleNextWordPrediction: _toggleNextWordPrediction,
+      nextWordPredictionInit: _doNextWordPrediction,
+      toggleNextWordPredictionTraining: _toggleNextWordPredictionTraining,
+      nextWordPredictionTrainingInit: _doNextWordPredictionTraining,
+      toggleTopBarOnMainPage: _toggleTopBar,
+      topBarOnMainPageInit: _showTopBar,
+      updateTextColor: _updateTextColor,
+      updatePredictedTextColor: _updatePredictedTextColor,
+      updateTextBackgroundColor: _updateTextBackgroundColor,
+      updateAppColor: _updateAppColor,
+      updateAppButtonColor: _updateAppButtonColor,
+      updateDisabledButtonColor: _updateDisabledButtonColor,
+      updateFontFamily: _updateFontFamily,
+      fontFamilyInit: _fontFamily,
+      resetCustomButtonOffsets: resetCustomButtonOffsets,
+      setSettingCustomButtonPlacements: _setSettingCustomButtonPlacements,
+      toggleUsingCustomButtonPlacements: _toggleUsingCustomButtonPlacements,
+      useCustomButtonPlacementsInit: _useCustomButtonPlacements,
+      toggleDeletingTextOnLostVisibility: _toggleDeletingTextOnLostVisibility,
+      toggleDeletingTextOnLostVisibilityInit: _deleteTextOnLostVisibility,
+    );
     Widget ttsButton = GestureDetector(
       onTap: _speakText,
       onVerticalDragUpdate: (dragUpdateDetails) {
@@ -661,6 +683,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             _ttsButtonOffset = dragUpdateDetails.localPosition.dy;
           }
           setState((){});
+        } else {
+          _speakText();
+        }
+      },
+      onVerticalDragStart: (e) {
+        if (!_setCustomButtonPlacements) {
+          _speakText();
         }
       },
       child: Padding(
@@ -680,6 +709,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             _increaseFontSizeButtonOffset = dragUpdateDetails.localPosition.dy;
           }
           setState((){});
+        } else {
+          _incrementFontSize();
+        }
+      },
+      onVerticalDragStart: (e) {
+        if (!_setCustomButtonPlacements) {
+          _incrementFontSize();
         }
       },
       child: Padding(
@@ -698,8 +734,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
             _decreaseFontSizeButtonOffset = dragUpdateDetails.localPosition.dy;
           }
-          
           setState((){});
+        } else {
+          _decrementFontSize();
+        }
+      },
+      onVerticalDragStart: (e) {
+        if (!_setCustomButtonPlacements) {
+          _decrementFontSize();
         }
       },
       child: Padding(
@@ -720,6 +762,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             _cameraButtonOffset = dragUpdateDetails.localPosition.dy;
           }
           setState((){});
+        } else {
+          _pickAndAddPictureFromGallery();
+        }
+      },
+      onVerticalDragStart: (e) {
+        if (!_setCustomButtonPlacements) {
+          _pickAndAddPictureFromGallery();
         }
       },
       child: Padding(
@@ -736,30 +785,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         // await so that we can call setState after the return in case the user is setting custom button placements
         await Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => SettingsPage(
-              toggleNextWordPrediction: _toggleNextWordPrediction,
-              nextWordPredictionInit: _doNextWordPrediction,
-              toggleNextWordPredictionTraining: _toggleNextWordPredictionTraining,
-              nextWordPredictionTrainingInit: _doNextWordPredictionTraining,
-              toggleTopBarOnMainPage: _toggleTopBar,
-              topBarOnMainPageInit: _showTopBar,
-              updateTextColor: _updateTextColor,
-              updatePredictedTextColor: _updatePredictedTextColor,
-              updateTextBackgroundColor: _updateTextBackgroundColor,
-              updateAppColor: _updateAppColor,
-              updateAppButtonColor: _updateAppButtonColor,
-              updateDisabledButtonColor: _updateDisabledButtonColor,
-              updateFontFamily: _updateFontFamily,
-              fontFamilyInit: _fontFamily,
-              resetCustomButtonOffsets: resetCustomButtonOffsets,
-              setSettingCustomButtonPlacements: _setSettingCustomButtonPlacements,
-              toggleUsingCustomButtonPlacements: _toggleUsingCustomButtonPlacements,
-              useCustomButtonPlacementsInit: _useCustomButtonPlacements,
-              toggleDeletingTextOnLostVisibility: _toggleDeletingTextOnLostVisibility,
-              toggleDeletingTextOnLostVisibilityInit: _deleteTextOnLostVisibility,
-            ),
-          ),
+          MaterialPageRoute(builder: (context) => settingsPageInstance,),
         );
         setState((){});
       },
@@ -768,6 +794,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height * 0.7) {
             _settingsButtonOffset = dragUpdateDetails.localPosition.dy;
           }
+          setState((){});
+        }
+      },
+      onVerticalDragStart: (e) async {
+        if (!_setCustomButtonPlacements) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => settingsPageInstance,),
+          );
           setState((){});
         }
       },
@@ -790,6 +825,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           setState((){});
         }
       },
+      onVerticalDragStart: (e) {
+        if (!_setCustomButtonPlacements) {
+          _restoreText();
+        }
+      },
       child: Padding(
         padding: EdgeInsetsGeometry.fromLTRB(padding, (_undoButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
         child: Icon(
@@ -807,6 +847,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             _deleteButtonOffset = dragUpdateDetails.localPosition.dy;
           }
           setState((){});
+        }
+      },
+      onVerticalDragStart: (e) {
+        if (!_setCustomButtonPlacements) {
+          _clearText();
         }
       },
       child: Padding(padding: EdgeInsetsGeometry.fromLTRB(padding, (_deleteButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
