@@ -28,6 +28,12 @@ class SettingsPage extends StatefulWidget {
   final void Function(String fontFamily) updateFontFamily;
   final String fontFamilyInit;
 
+  final void Function() resetCustomButtonOffsets;
+
+  final void Function(bool value) setSettingCustomButtonPlacements;
+  final void Function() toggleUsingCustomButtonPlacements;
+  final bool useCustomButtonPlacementsInit;
+
   const SettingsPage({
     super.key,
     required this.toggleNextWordPrediction,
@@ -44,6 +50,10 @@ class SettingsPage extends StatefulWidget {
     required this.updateDisabledButtonColor, 
     required this.updateFontFamily,
     required this.fontFamilyInit,
+    required this.resetCustomButtonOffsets,
+    required this.setSettingCustomButtonPlacements,
+    required this.toggleUsingCustomButtonPlacements,
+    required this.useCustomButtonPlacementsInit,
   });
 
   @override
@@ -59,6 +69,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _nextWordPrediction = false;
   bool _nextWordPredictionTraining = false;
   bool _topBarOnMainPage = false;
+  bool _useCustomButtonPlacements = false;
 
   late Color textColor;
   late Color predictedTextColor;
@@ -144,11 +155,14 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
 
+    widget.setSettingCustomButtonPlacements(false);
+
     _updateLists();
 
     _nextWordPrediction = widget.nextWordPredictionInit;
     _nextWordPredictionTraining = widget.nextWordPredictionTrainingInit;
     _topBarOnMainPage = widget.topBarOnMainPageInit;
+    _useCustomButtonPlacements = widget.useCustomButtonPlacementsInit;
 
     textColor = Color(Globals.textColor.toARGB32());
     predictedTextColor = Color(Globals.predictedTextColor.toARGB32());
@@ -511,6 +525,55 @@ class _SettingsPageState extends State<SettingsPage> {
                       _nextWordPredictionTraining = value ?? true;
                     });
                     widget.toggleNextWordPredictionTraining();
+                  },
+                )
+              ]
+            ),
+
+            TableRow(
+              children: [
+                ElevatedButton(
+                  onPressed: widget.resetCustomButtonOffsets, 
+                  child: Text("Reset custom button locations")
+                ),
+                Container(),
+              ]
+            ),
+
+            TableRow(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    widget.setSettingCustomButtonPlacements(true);
+                    if (!_useCustomButtonPlacements) {
+                      widget.toggleUsingCustomButtonPlacements;
+                    }
+                    Navigator.pop(context);
+                  }, 
+                  child: Text("Set custom button locations")
+                ),
+                Container(),
+              ]
+            ),
+
+            TableRow(
+              children: [
+                Text("Use custom button locations"),
+                Checkbox(
+                  checkColor: appButtonColor,
+                  shape: RoundedRectangleBorder(),
+                  fillColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+                    if (states.contains(WidgetState.pressed) || states.contains(WidgetState.selected)) {
+                      return appColor;
+                    }
+                    return appButtonColor;
+                  }),
+                  value: _useCustomButtonPlacements, 
+                  onChanged: (value) {
+                    setState(() {
+                      _useCustomButtonPlacements = value ?? false;
+                    });
+                    widget.toggleUsingCustomButtonPlacements();
                   },
                 )
               ]

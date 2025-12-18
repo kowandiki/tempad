@@ -9,4 +9,5 @@ class Globals {
   static Color appColor = Colors.blue;
   static Color appButtonColor = Colors.white;
   static Color disabledButtonColor = const Color.fromARGB(255, 187, 187, 187);
+
 }

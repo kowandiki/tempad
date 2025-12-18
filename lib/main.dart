@@ -51,6 +51,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _doNextWordPredictionTraining = true;
   bool _showTopBar = false;
 
+  bool _useCustomButtonPlacements = false;
+  bool _setCustomButtonPlacements = false;
+
+  double _ttsButtonOffset               = 0.0;
+  double _increaseFontSizeButtonOffset  = 25.0;
+  double _decreaseFontSizeButtonOffset  = 50.0;
+  double _cameraButtonOffset            = 75.0;
+  double _settingsButtonOffset          = 100.0;
+  double _undoButtonOffset              = 125.0;
+  double _deleteButtonOffset            = 150.0;
+
   final ImagePicker _picker = ImagePicker();
   List<String> _imageUrls = [];
 
@@ -92,6 +103,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _fontFamily = prefs.getString("fontFamily") ?? "NotoSans";
 
     _weights = await readWeightsFromDevice();
+
+    _useCustomButtonPlacements = prefs.getBool("useCustomButtonLocations") ?? false;
+
+    _ttsButtonOffset = prefs.getDouble("ttsButtonOffset") ?? 0.0;
+    _increaseFontSizeButtonOffset = prefs.getDouble("increaseFontSizeButtonOffset") ?? 25.0;
+    _decreaseFontSizeButtonOffset = prefs.getDouble("decreaseFontSizeButtonOffset") ?? 50.0;
+    _cameraButtonOffset = prefs.getDouble("cameraButtonOffset") ?? 75.0;
+    _settingsButtonOffset = prefs.getDouble("settingsButtonOffset") ?? 100.0;
+    _undoButtonOffset = prefs.getDouble("undoButtonOffset") ?? 125.0;
+    _deleteButtonOffset = prefs.getDouble("deleteButtonOffset") ?? 150.0;
   }
 
   void _saveValues() async {
@@ -286,6 +307,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
 
     _saveValues();
+    setState((){});
   }
 
   void _incrementFontSize() {
@@ -298,6 +320,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
 
     _saveValues();
+    setState((){});
   }
 
   void _clearText() {
@@ -574,8 +597,212 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   }
 
+  void resetCustomButtonOffsets() {
+    _ttsButtonOffset = 0.0;
+    _increaseFontSizeButtonOffset = 25.0;
+    _decreaseFontSizeButtonOffset = 50.0;
+    _cameraButtonOffset = 75.0;
+    _settingsButtonOffset = 100.0;
+    _undoButtonOffset = 125.0;
+    _deleteButtonOffset = 150.0;
+    setState((){});
+    _saveCustomButtonOffsets();
+  }
+
+  void _setSettingCustomButtonPlacements(bool value) {
+    _setCustomButtonPlacements = value;
+    
+    _saveCustomButtonOffsets();
+  }
+
+  void _toggleUsingCustomButtonPlacements() async {
+    _useCustomButtonPlacements = !_useCustomButtonPlacements;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("useCustomButtonLocations", _useCustomButtonPlacements);
+
+    setState((){});
+  }
+
+  void _saveCustomButtonOffsets() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble("ttsButtonOffset", _ttsButtonOffset);
+    await prefs.setDouble("increaseFontSizeButtonOffset", _increaseFontSizeButtonOffset);
+    await prefs.setDouble("decreaseFontSizeButtonOffset", _decreaseFontSizeButtonOffset);
+    await prefs.setDouble("cameraButtonOffset", _cameraButtonOffset);
+    await prefs.setDouble("settingsButtonOffset", _settingsButtonOffset);
+    await prefs.setDouble("undoButtonOffset", _undoButtonOffset);
+    await prefs.setDouble("deleteButtonOffset", _deleteButtonOffset);
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    double padding = 12.0;
+
+    Widget ttsButton = GestureDetector(
+      onTap: _speakText,
+      onVerticalDragUpdate: (dragUpdateDetails) {
+        if (_setCustomButtonPlacements) {
+          if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
+            _ttsButtonOffset = dragUpdateDetails.localPosition.dy;
+          }
+          setState((){});
+        }
+      },
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_ttsButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.campaign,
+          color: Globals.appButtonColor,
+        ),
+      )
+    );
+    
+    Widget increaseFontSizeButton = GestureDetector(
+      onTap: _incrementFontSize,
+      onVerticalDragUpdate: (dragUpdateDetails) {
+        if (_setCustomButtonPlacements) {
+          if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
+            _increaseFontSizeButtonOffset = dragUpdateDetails.localPosition.dy;
+          }
+          setState((){});
+        }
+      },
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_increaseFontSizeButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.add,
+          color: Globals.appButtonColor
+        ),
+      ),
+    );
+
+    Widget decreaseFontSizeButton = GestureDetector(
+      onTap: _decrementFontSize,
+      onVerticalDragUpdate: (dragUpdateDetails) {
+        if (_setCustomButtonPlacements) {
+          if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
+            _decreaseFontSizeButtonOffset = dragUpdateDetails.localPosition.dy;
+          }
+          
+          setState((){});
+        }
+      },
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_decreaseFontSizeButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.remove,
+          color: Globals.appButtonColor
+        ),
+      )
+    );
+
+    Widget selectImageButton = GestureDetector(
+      onTap: _pickAndAddPictureFromGallery,
+      onLongPress: _pickAndAddPictureFromCamera,
+      onVerticalDragUpdate: (dragUpdateDetails) {
+        if (_setCustomButtonPlacements) {
+          if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
+            _cameraButtonOffset = dragUpdateDetails.localPosition.dy;
+          }
+          setState((){});
+        }
+      },
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_cameraButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.add_a_photo,
+          color: Globals.appButtonColor
+        ),
+      )
+    );
+
+    Widget settingsButton = GestureDetector(
+      onTap: () async {
+        // await so that we can call setState after the return in case the user is setting custom button placements
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SettingsPage(
+              toggleNextWordPrediction: _toggleNextWordPrediction,
+              nextWordPredictionInit: _doNextWordPrediction,
+              toggleNextWordPredictionTraining: _toggleNextWordPredictionTraining,
+              nextWordPredictionTrainingInit: _doNextWordPredictionTraining,
+              toggleTopBarOnMainPage: _toggleTopBar,
+              topBarOnMainPageInit: _showTopBar,
+              updateTextColor: _updateTextColor,
+              updatePredictedTextColor: _updatePredictedTextColor,
+              updateTextBackgroundColor: _updateTextBackgroundColor,
+              updateAppColor: _updateAppColor,
+              updateAppButtonColor: _updateAppButtonColor,
+              updateDisabledButtonColor: _updateDisabledButtonColor,
+              updateFontFamily: _updateFontFamily,
+              fontFamilyInit: _fontFamily,
+              resetCustomButtonOffsets: resetCustomButtonOffsets,
+              setSettingCustomButtonPlacements: _setSettingCustomButtonPlacements,
+              toggleUsingCustomButtonPlacements: _toggleUsingCustomButtonPlacements,
+              useCustomButtonPlacementsInit: _useCustomButtonPlacements,
+            ),
+          ),
+        );
+        setState((){});
+      },
+      onVerticalDragUpdate: (dragUpdateDetails) {
+        if (_setCustomButtonPlacements) {
+          if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height * 0.7) {
+            _settingsButtonOffset = dragUpdateDetails.localPosition.dy;
+          }
+          setState((){});
+        }
+      },
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_settingsButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.settings,
+          color: Globals.appButtonColor
+        ),
+      ),
+    );
+
+    Widget undoButton = GestureDetector(
+      onTap: _restoreText,
+      onVerticalDragUpdate: (dragUpdateDetails) {
+        if (_setCustomButtonPlacements) {
+          if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
+            _undoButtonOffset = dragUpdateDetails.localPosition.dy;
+          }
+          setState((){});
+        }
+      },
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_undoButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.undo,
+          color: Globals.appButtonColor
+        ),
+      ),
+    );
+
+    Widget deleteButton = GestureDetector(
+      onTap: _clearText,
+      onVerticalDragUpdate: (dragUpdateDetails) {
+        if (_setCustomButtonPlacements) {
+          if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
+            _deleteButtonOffset = dragUpdateDetails.localPosition.dy;
+          }
+          setState((){});
+        }
+      },
+      child: Padding(padding: EdgeInsetsGeometry.fromLTRB(padding, (_deleteButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+      child: Icon(
+          Icons.delete_forever,
+          color: Globals.appButtonColor
+        ),
+      ),
+    );
+
+
     return Scaffold(
       backgroundColor: Globals.textBackgroundColor,
       appBar: (_showTopBar ? 
@@ -639,6 +866,31 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             ),
                           ),
                         ),
+
+                        Visibility(
+                          visible: _setCustomButtonPlacements,
+                          child: Padding(
+                            padding: EdgeInsetsGeometry.all(30),
+                            child: Stack(
+                              children: [
+                                Container(
+                                  color: Globals.appColor,
+                                ),
+                                Padding(
+                                  padding: EdgeInsetsGeometry.all(5),
+                                  child: RichText(
+                                    text: TextSpan(
+                                      text: "Hold and drag the icons on the side to move them up or down into your preferred layout. Once you're happy with the layout, just click on the settings button again. \n\nNote: Make sure the settings button always remains accessible",
+                                      style: TextStyle(color: Globals.appButtonColor, fontSize: 20.0),
+                                    ),
+                                  ),
+                                )
+                                
+                              ]
+                            )
+                          )
+                        )
+
                       ]
                     )
                   ),
@@ -707,7 +959,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // workspaces / prepared phrases pages
                         ElevatedButton(
                           onPressed: _changeTextWorkspace, 
-                          child: Text("workspace $_currentWorkspace")
+                          child: Text("ws $_currentWorkspace")
                         ),
                         // ======================================= //
 
@@ -746,122 +998,63 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               )
             ),
             
+            // Button Bar on the right
+            Visibility(
+              visible: !_useCustomButtonPlacements,
+              child: Container(
+                color: Globals.appColor,
+                child: Column(
+                  children: [
+
+                    Expanded(child: Container()),
+
+                    ttsButton,
+
+                    Expanded(child: Container()),
+
+                    increaseFontSizeButton,
+                    decreaseFontSizeButton,
+
+                    Expanded(child: Container()),
+
+                    selectImageButton,
+
+                    Expanded(child: Container()),
+                    
+                    settingsButton,
+
+                    Expanded(child: Container()),
+
+                    undoButton,
+                    deleteButton,
+
+                  ],
+                ),
+              ),
+            ),
             
 
-            // Button Bar on the right
-            Container(
-              color: Globals.appColor,
-              child: Column(
-                children: [
-
-                  Expanded(child: Container()),
-
-                  // ======================================= //
-                  // TTS Button
-                  IconButton(
-                    icon: const Icon(Icons.campaign),
-                    color: ttsEnabled ? Globals.appButtonColor : Globals.disabledButtonColor,
-                    tooltip: "Text to Speech",
-                    onPressed: () {
-                      _speakText();
-                    },
-                  ),
-                  // ======================================= //
-
-                  Expanded(child: Container()),
-
-                  // ======================================= //
-                  // Increase Font size
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    color: Globals.appButtonColor,
-                    tooltip: "increase font size",
-                    onPressed: () {
-                      setState(_incrementFontSize);
-                    },
-                  ),
-                  
-                  // Decrease font size
-                  IconButton(
-                    icon: const Icon(Icons.remove),
-                    color: Globals.appButtonColor,
-                    tooltip: "decrease font size",
-                    onPressed: () {
-                      setState(_decrementFontSize);
-                    },
-                  ),
-                  // ======================================= //
-
-                  Expanded(child: Container()),
-
-                  // ======================================= //
-                  // Select Image
-                  IconButton(
-                    icon: const Icon(Icons.add_a_photo),
-                    color: Globals.appButtonColor,
-                    onPressed: _pickAndAddPictureFromGallery,
-                    onLongPress: _pickAndAddPictureFromCamera,
-                  ),
-
-                  // ======================================= //
-
-                  Expanded(child: Container()),
-                  
-                  // ======================================= //
-                  // Settings
-                  IconButton(
-                    icon: const Icon(Icons.settings),
-                    color: Globals.appButtonColor,
-                    tooltip: "Settings",
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SettingsPage(
-                            toggleNextWordPrediction: _toggleNextWordPrediction,
-                            nextWordPredictionInit: _doNextWordPrediction,
-                            toggleNextWordPredictionTraining: _toggleNextWordPredictionTraining,
-                            nextWordPredictionTrainingInit: _doNextWordPredictionTraining,
-                            toggleTopBarOnMainPage: _toggleTopBar,
-                            topBarOnMainPageInit: _showTopBar,
-                            updateTextColor: _updateTextColor,
-                            updatePredictedTextColor: _updatePredictedTextColor,
-                            updateTextBackgroundColor: _updateTextBackgroundColor,
-                            updateAppColor: _updateAppColor,
-                            updateAppButtonColor: _updateAppButtonColor,
-                            updateDisabledButtonColor: _updateDisabledButtonColor,
-                            updateFontFamily: _updateFontFamily,
-                            fontFamilyInit: _fontFamily,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  // ======================================= //
-
-                  Expanded(child: Container()),
-
-                  // ======================================= //
-                  // Undo
-                  IconButton(
-                    icon: const Icon(Icons.undo),
-                    color: Globals.appButtonColor,
-                    tooltip: "Restores the deleted text",
-                    onPressed: _restoreText,
-                  ),
-
-
-                  // Delete
-                  IconButton(
-                    icon: const Icon(Icons.delete_forever),
-                    color: Globals.appButtonColor,
-                    tooltip: "clear all text",
-                    onPressed: _clearText,
-                  ),
-                  // ======================================= //
-
-                ],
-              ),
+            // Alternative button bar that uses custom user placements
+            Visibility(
+              visible: _useCustomButtonPlacements,
+              child: Container(
+                color: Globals.appColor, 
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        ttsButton,
+                        increaseFontSizeButton,
+                        decreaseFontSizeButton,
+                        selectImageButton,
+                        undoButton,
+                        deleteButton,
+                        settingsButton, // have last so its always accessible
+                      ]
+                    ),
+                  ]
+                )
+              )
             ),
           ],
         ),
