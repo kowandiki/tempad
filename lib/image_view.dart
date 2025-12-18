@@ -1,6 +1,7 @@
 
 import 'dart:io';
 
+import 'package:bloknot/globals.dart';
 import 'package:flutter/material.dart';
 
 class ImageView extends StatelessWidget {
@@ -9,7 +10,7 @@ class ImageView extends StatelessWidget {
 
   const ImageView({
     super.key,
-    required this.imageUrl
+    required this.imageUrl,
   });
 
   @override
@@ -19,11 +20,11 @@ class ImageView extends StatelessWidget {
         title: RichText(
           text: TextSpan(
             text: "Image View",
-            style: TextStyle(color: Colors.white, fontSize: 25.0),
+            style: TextStyle(color: Globals.appButtonColor, fontSize: 25.0),
           ),
         ),
-        backgroundColor: Colors.blue,
-        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: Globals.appColor,
+        iconTheme: IconThemeData(color: Globals.appButtonColor),
       ),
       body: InteractiveViewer(
         panEnabled: true,

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bloknot/color_picker.dart';
 import 'package:bloknot/color_picker_button.dart';
+import 'package:bloknot/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,22 +16,11 @@ class SettingsPage extends StatefulWidget {
   final bool topBarOnMainPageInit;
 
   final void Function(int sRGB) updateTextColor;
-  final int textColorInit;
-
   final void Function(int sRGB) updatePredictedTextColor;
-  final int predictedTextColorInit;
-
   final void Function(int sRGB) updateTextBackgroundColor;
-  final int textBackgroundColorInit;
-
   final void Function(int sRGB) updateAppColor;
-  final int appColorInit;
-
   final void Function(int sRGB) updateAppButtonColor;
-  final int appButtonColorInit;
-
   final void Function(int sRGB) updateDisabledButtonColor;
-  final int disabledButtonColorInit;
 
   final void Function(String fontFamily) updateFontFamily;
   final String fontFamilyInit;
@@ -42,17 +32,11 @@ class SettingsPage extends StatefulWidget {
     required this.toggleTopBarOnMainPage,
     required this.topBarOnMainPageInit, 
     required this.updateTextColor, 
-    required this.textColorInit, 
     required this.updatePredictedTextColor, 
-    required this.predictedTextColorInit, 
     required this.updateTextBackgroundColor, 
-    required this.textBackgroundColorInit, 
     required this.updateAppColor, 
-    required this.appColorInit, 
     required this.updateAppButtonColor, 
-    required this.appButtonColorInit, 
     required this.updateDisabledButtonColor, 
-    required this.disabledButtonColorInit,
     required this.updateFontFamily,
     required this.fontFamilyInit,
   });
@@ -159,12 +143,12 @@ class _SettingsPageState extends State<SettingsPage> {
     _nextWordPrediction = widget.nextWordPredictionInit;
     _topBarOnMainPage = widget.topBarOnMainPageInit;
 
-    textColor = Color(widget.textColorInit);
-    predictedTextColor = Color(widget.predictedTextColorInit);
-    textBackgroundColor = Color(widget.textBackgroundColorInit);
-    appColor = Color(widget.appColorInit);
-    appButtonColor = Color(widget.appButtonColorInit);
-    disabledButtonColor = Color(widget.disabledButtonColorInit);
+    textColor = Color(Globals.textColor.toARGB32());
+    predictedTextColor = Color(Globals.predictedTextColor.toARGB32());
+    textBackgroundColor = Color(Globals.textBackgroundColor.toARGB32());
+    appColor = Color(Globals.appColor.toARGB32());
+    appButtonColor = Color(Globals.appButtonColor.toARGB32());
+    disabledButtonColor = Color(Globals.disabledButtonColor.toARGB32());
 
     fontFamily = widget.fontFamilyInit;
 

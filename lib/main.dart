@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bloknot/globals.dart';
 import 'package:bloknot/image_deck.dart';
 import 'package:bloknot/settings.dart';
 import 'package:bloknot/word.dart';
@@ -26,8 +27,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        fontFamily: "NotoSans"
-        // colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        fontFamily: "NotoSans",
       ),
       home: const MyHomePage(title: 'Tempad'),
     );
@@ -81,12 +81,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     _showTopBar = prefs.getBool("showTopBar") ?? false;
 
-    _textColor = Color(prefs.getInt("textColor") ?? _textColor.toARGB32());
-    _predictedTextColor = Color(prefs.getInt("predictedTextColor") ?? _predictedTextColor.toARGB32());
-    _textBackgroundColor = Color(prefs.getInt("textBackgroundColor") ?? _textBackgroundColor.toARGB32());
-    _appColor = Color(prefs.getInt("appColor") ?? _appColor.toARGB32());
-    _appButtonColor = Color(prefs.getInt("appButtonColor") ?? _appButtonColor.toARGB32());
-    _disabledButtonColor = Color(prefs.getInt("disabledButtonColor") ?? _disabledButtonColor.toARGB32());
+    Globals.textColor = Color(prefs.getInt("textColor") ?? Globals.textColor.toARGB32());
+    Globals.predictedTextColor = Color(prefs.getInt("predictedTextColor") ?? Globals.predictedTextColor.toARGB32());
+    Globals.textBackgroundColor = Color(prefs.getInt("textBackgroundColor") ?? Globals.textBackgroundColor.toARGB32());
+    Globals.appColor = Color(prefs.getInt("appColor") ?? Globals.appColor.toARGB32());
+    Globals.appButtonColor = Color(prefs.getInt("appButtonColor") ?? Globals.appButtonColor.toARGB32());
+    Globals.disabledButtonColor = Color(prefs.getInt("disabledButtonColor") ?? Globals.disabledButtonColor.toARGB32());
+    // Globals.textColor = Color(prefs.getInt("textColor") ?? Globals.textColor.toARGB32());
+    // Globals.predictedTextColor = Color(prefs.getInt("predictedTextColor") ?? Globals.predictedTextColor.toARGB32());
+    // Globals.textBackgroundColor = Color(prefs.getInt("textBackgroundColor") ?? Globals.textBackgroundColor.toARGB32());
+    // Globals.appColor = Color(prefs.getInt("appColor") ?? Globals.appColor.toARGB32());
+    // Globals.appButtonColor = Color(prefs.getInt("appButtonColor") ?? Globals.appButtonColor.toARGB32());
+    // Globals.disabledButtonColor = Color(prefs.getInt("disabledButtonColor") ?? Globals.disabledButtonColor.toARGB32());
 
     _fontFamily = prefs.getString("fontFamily") ?? "NotoSans";
 
@@ -103,13 +109,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final double _maxFontSize = 60;
   final double _fontSizeStep = 5;
 
-  Color _textColor = Colors.black;
-  Color _predictedTextColor = Colors.grey;
-  Color _textBackgroundColor = Colors.white;
-  Color _appColor = Colors.blue;
-  Color _appButtonColor = Colors.white;
-  Color _disabledButtonColor = const Color.fromARGB(255, 187, 187, 187);
-  Color _speakTextButtonColor = Colors.white;
+  bool ttsEnabled = false;
 
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _predictedController = TextEditingController();
@@ -168,62 +168,62 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   void _updateTextColor(int sRGB) async {
 
     setState(() {
-      _textColor = Color(sRGB);
+     Globals.textColor = Color(sRGB);
     });
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("textColor", _textColor.toARGB32());
+    await prefs.setInt("textColor", Globals.textColor.toARGB32());
   }
 
   void _updatePredictedTextColor(int sRGB) async {
 
     setState(() {
-      _predictedTextColor = Color(sRGB);
+      Globals.predictedTextColor = Color(sRGB);
     });
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("predictedTextColor", _predictedTextColor.toARGB32());
+    await prefs.setInt("predictedTextColor", Globals.predictedTextColor.toARGB32());
   }
 
   void _updateTextBackgroundColor(int sRGB) async {
 
     setState(() {
-      _textBackgroundColor = Color(sRGB);
+      Globals.textBackgroundColor = Color(sRGB);
     });
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("textBackgroundColor", _textBackgroundColor.toARGB32());
+    await prefs.setInt("textBackgroundColor", Globals.textBackgroundColor.toARGB32());
   }
 
   void _updateAppColor(int sRGB) async {
 
     setState(() {
-      _appColor = Color(sRGB);
+      Globals.appColor = Color(sRGB);
     });
     
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("appColor", _appColor.toARGB32());
+    await prefs.setInt("appColor", Globals.appColor.toARGB32());
     
   }
 
   void _updateAppButtonColor(int sRGB) async {
 
     setState(() {
-      _appButtonColor = Color(sRGB);
+      Globals.appButtonColor = Color(sRGB);
     });
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("appButtonColor", _appButtonColor.toARGB32());
+    await prefs.setInt("appButtonColor", Globals.appButtonColor.toARGB32());
   }
 
   void _updateDisabledButtonColor(int sRGB) async {
 
     setState(() {
-      _disabledButtonColor = Color(sRGB);
+      Globals.disabledButtonColor = Color(sRGB);
     });
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("disabledButtonColor", _disabledButtonColor.toARGB32());
+    await prefs.setInt("disabledButtonColor", Globals.disabledButtonColor.toARGB32());
 
     
   }
@@ -233,13 +233,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     if (await flutterTts.getDefaultEngine == null) {
       
       setState(() {
-        _speakTextButtonColor = _disabledButtonColor;
+        ttsEnabled = false;
       });
 
     } else {
 
       setState(() {
-        _speakTextButtonColor = _appButtonColor;
+        ttsEnabled = true;
       });
     }
   }
@@ -572,12 +572,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _textBackgroundColor,
+      backgroundColor: Globals.textBackgroundColor,
       appBar: (_showTopBar ? 
         PreferredSize(
           preferredSize: Size.fromHeight(0),
           child: AppBar(
-            backgroundColor: _appColor,
+            backgroundColor: Globals.appColor,
             elevation: 0
           ) 
         ) 
@@ -608,7 +608,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             controller: _predictedController,
                             maxLines: null,
                             minLines: null,
-                            style: TextStyle(fontSize: _fontSize, color: _predictedTextColor, fontFamily: _fontFamily),
+                            style: TextStyle(fontSize: _fontSize, color: Globals.predictedTextColor, fontFamily: _fontFamily),
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               focusedBorder: InputBorder.none,
@@ -626,7 +626,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             controller: _controller,
                             maxLines: null,
                             minLines: null,
-                            style: TextStyle(fontSize: _fontSize, color: _textColor, fontFamily: _fontFamily),
+                            style: TextStyle(fontSize: _fontSize, color: Globals.textColor, fontFamily: _fontFamily),
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               focusedBorder: InputBorder.none,
@@ -645,7 +645,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                       
                       child: Container(
                         // color: const Color.fromARGB(255, 209, 209, 209),
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
@@ -666,7 +666,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
                   // Button Bar on the bottom
                   Container(
-                    color: _appColor,
+                    color: Globals.appColor,
                     child: Row(
                       children: [
                         
@@ -676,7 +676,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // change text position back 1 word
                         IconButton(
                           icon: const Icon(Icons.keyboard_double_arrow_left),
-                          color: _appButtonColor,
+                          color: Globals.appButtonColor,
                           tooltip: "Go back 1 word",
                           onPressed: () {
                             _goBackwardOneWord();
@@ -688,7 +688,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // change text position back 1 character
                         IconButton(
                           icon: const Icon(Icons.keyboard_arrow_left),
-                          color: _appButtonColor,
+                          color: Globals.appButtonColor,
                           tooltip: "Go back 1 character",
                           onPressed: () {
                             _goBackwardOneChar();
@@ -712,7 +712,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // change text position forward 1 character
                         IconButton(
                           icon: const Icon(Icons.keyboard_arrow_right),
-                          color: _appButtonColor,
+                          color: Globals.appButtonColor,
                           tooltip: "Go forward 1 character",
                           onPressed: () {
                             _goForwardOneChar();
@@ -724,7 +724,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // change text position forward 1 word
                         IconButton(
                           icon: const Icon(Icons.keyboard_double_arrow_right),
-                          color: _appButtonColor,
+                          color: Globals.appButtonColor,
                           tooltip: "Go back 1 word",
                           onPressed: () {
                             _goForwardOneWord();
@@ -745,7 +745,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
             // Button Bar on the right
             Container(
-              color: _appColor,
+              color: Globals.appColor,
               child: Column(
                 children: [
 
@@ -755,7 +755,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // TTS Button
                   IconButton(
                     icon: const Icon(Icons.campaign),
-                    color: _speakTextButtonColor,
+                    color: ttsEnabled ? Globals.appButtonColor : Globals.disabledButtonColor,
                     tooltip: "Text to Speech",
                     onPressed: () {
                       _speakText();
@@ -769,7 +769,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Increase Font size
                   IconButton(
                     icon: const Icon(Icons.add),
-                    color: _appButtonColor,
+                    color: Globals.appButtonColor,
                     tooltip: "increase font size",
                     onPressed: () {
                       setState(_incrementFontSize);
@@ -779,7 +779,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Decrease font size
                   IconButton(
                     icon: const Icon(Icons.remove),
-                    color: _appButtonColor,
+                    color: Globals.appButtonColor,
                     tooltip: "decrease font size",
                     onPressed: () {
                       setState(_decrementFontSize);
@@ -793,7 +793,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Select Image
                   IconButton(
                     icon: const Icon(Icons.add_a_photo),
-                    color: _appButtonColor,
+                    color: Globals.appButtonColor,
                     onPressed: _pickAndAddPictureFromGallery,
                     onLongPress: _pickAndAddPictureFromCamera,
                   ),
@@ -806,7 +806,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Settings
                   IconButton(
                     icon: const Icon(Icons.settings),
-                    color: _appButtonColor,
+                    color: Globals.appButtonColor,
                     tooltip: "Settings",
                     onPressed: () {
                       Navigator.push(
@@ -818,17 +818,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             toggleTopBarOnMainPage: _toggleTopBar,
                             topBarOnMainPageInit: _showTopBar,
                             updateTextColor: _updateTextColor,
-                            textColorInit: _textColor.toARGB32(),
                             updatePredictedTextColor: _updatePredictedTextColor,
-                            predictedTextColorInit: _predictedTextColor.toARGB32(),
                             updateTextBackgroundColor: _updateTextBackgroundColor,
-                            textBackgroundColorInit: _textBackgroundColor.toARGB32(),
                             updateAppColor: _updateAppColor,
-                            appColorInit: _appColor.toARGB32(),
                             updateAppButtonColor: _updateAppButtonColor,
-                            appButtonColorInit: _appButtonColor.toARGB32(),
                             updateDisabledButtonColor: _updateDisabledButtonColor,
-                            disabledButtonColorInit: _disabledButtonColor.toARGB32(),
                             updateFontFamily: _updateFontFamily,
                             fontFamilyInit: _fontFamily,
                           ),
@@ -844,7 +838,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Undo
                   IconButton(
                     icon: const Icon(Icons.undo),
-                    color: _appButtonColor,
+                    color: Globals.appButtonColor,
                     tooltip: "Restores the deleted text",
                     onPressed: _restoreText,
                   ),
@@ -853,7 +847,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // Delete
                   IconButton(
                     icon: const Icon(Icons.delete_forever),
-                    color: _appButtonColor,
+                    color: Globals.appButtonColor,
                     tooltip: "clear all text",
                     onPressed: _clearText,
                   ),
