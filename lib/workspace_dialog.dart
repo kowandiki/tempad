@@ -1,4 +1,5 @@
 import 'package:bloknot/globals.dart';
+import 'package:bloknot/workspace_row.dart';
 import 'package:flutter/material.dart';
 
 class WorkspaceDialog extends StatelessWidget {
@@ -12,34 +13,16 @@ class WorkspaceDialog extends StatelessWidget {
     });
 
 
-  List<Row> _generateWorkspaceList(BuildContext context, int numOfRows) {
+  List<Widget> _generateWorkspaceList(BuildContext context, int numOfRows) {
 
-    List<Row> rows = [];
+    List<Widget> rows = [];
 
     for (int i = 0; i < numOfRows; i++) {
       rows.add(
-        Row(
-          children: [
-            SimpleDialogOption(
-              onPressed: () { Navigator.pop(context, i); },
-              child: RichText(
-                text: TextSpan(
-                  text: "Workspace $i",
-                  style: TextStyle(
-                    color: Globals.appButtonColor,
-                    fontSize: 16,
-                  )
-                )
-              ),
-            ),
-            Expanded(child: Container(),),
-            IconButton(
-              onPressed: () { clearWorkspaceText(i); },
-              icon: const Icon(Icons.delete_forever), 
-              color: activeWorkspaces[i] ? Globals.appButtonColor : Globals.disabledButtonColor
-            ),
-          ]
-        )
+        WorkspaceRow(
+          index: i, 
+          clearWorkspaceText: clearWorkspaceText, 
+          isWorkspaceActive: activeWorkspaces[i])
       );
     }
 
