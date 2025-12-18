@@ -34,6 +34,9 @@ class SettingsPage extends StatefulWidget {
   final void Function() toggleUsingCustomButtonPlacements;
   final bool useCustomButtonPlacementsInit;
 
+  final void Function() toggleDeletingTextOnLostVisibility;
+  final bool toggleDeletingTextOnLostVisibilityInit;
+
   const SettingsPage({
     super.key,
     required this.toggleNextWordPrediction,
@@ -54,6 +57,8 @@ class SettingsPage extends StatefulWidget {
     required this.setSettingCustomButtonPlacements,
     required this.toggleUsingCustomButtonPlacements,
     required this.useCustomButtonPlacementsInit,
+    required this.toggleDeletingTextOnLostVisibility,
+    required this.toggleDeletingTextOnLostVisibilityInit
   });
 
   @override
@@ -70,6 +75,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _nextWordPredictionTraining = false;
   bool _topBarOnMainPage = false;
   bool _useCustomButtonPlacements = false;
+  bool _deleteTextOnLostVisibility = false;
 
   late Color textColor;
   late Color predictedTextColor;
@@ -163,6 +169,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _nextWordPredictionTraining = widget.nextWordPredictionTrainingInit;
     _topBarOnMainPage = widget.topBarOnMainPageInit;
     _useCustomButtonPlacements = widget.useCustomButtonPlacementsInit;
+    _deleteTextOnLostVisibility = widget.toggleDeletingTextOnLostVisibilityInit;
 
     textColor = Color(Globals.textColor.toARGB32());
     predictedTextColor = Color(Globals.predictedTextColor.toARGB32());
@@ -574,6 +581,29 @@ class _SettingsPageState extends State<SettingsPage> {
                       _useCustomButtonPlacements = value ?? false;
                     });
                     widget.toggleUsingCustomButtonPlacements();
+                  },
+                )
+              ]
+            ),
+
+            TableRow(
+              children: [
+                Text("Clear text when app loses focus"),
+                Checkbox(
+                  checkColor: appButtonColor,
+                  shape: RoundedRectangleBorder(),
+                  fillColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+                    if (states.contains(WidgetState.pressed) || states.contains(WidgetState.selected)) {
+                      return appColor;
+                    }
+                    return appButtonColor;
+                  }),
+                  value: _deleteTextOnLostVisibility, 
+                  onChanged: (value) {
+                    setState(() {
+                      _deleteTextOnLostVisibility = value ?? true;
+                    });
+                    widget.toggleDeletingTextOnLostVisibility();
                   },
                 )
               ]

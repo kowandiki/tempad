@@ -46,6 +46,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _visible = true;
   bool _deleteOnVisibilityLossBypass = false; // This is so that when selecting an image, all text is not deleted
+  bool _deleteTextOnLostVisibility = true;
 
   bool _doNextWordPrediction = true;
   bool _doNextWordPredictionTraining = true;
@@ -113,6 +114,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _settingsButtonOffset = prefs.getDouble("settingsButtonOffset") ?? 100.0;
     _undoButtonOffset = prefs.getDouble("undoButtonOffset") ?? 125.0;
     _deleteButtonOffset = prefs.getDouble("deleteButtonOffset") ?? 150.0;
+
+    _deleteTextOnLostVisibility = prefs.getBool("deleteTextOnLostVisibility") ?? true;
   }
 
   void _saveValues() async {
@@ -279,7 +282,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       !_deleteOnVisibilityLossBypass
     ) {
       _visible = false;
-      _clearText();
+      if (_deleteTextOnLostVisibility) {
+        _clearText();
+      }
       // This is to avoid writing large amounts of weights constantly
       // so instead only doing it when the app goes into the background
       writeWeightsToDevice(_weights);
@@ -635,6 +640,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     await prefs.setDouble("deleteButtonOffset", _deleteButtonOffset);
   }
 
+  void _toggleDeletingTextOnLostVisibility() async {
+
+    _deleteTextOnLostVisibility = !_deleteTextOnLostVisibility;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("deleteTextOnLostVisibility", _deleteTextOnLostVisibility);
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -743,6 +756,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               setSettingCustomButtonPlacements: _setSettingCustomButtonPlacements,
               toggleUsingCustomButtonPlacements: _toggleUsingCustomButtonPlacements,
               useCustomButtonPlacementsInit: _useCustomButtonPlacements,
+              toggleDeletingTextOnLostVisibility: _toggleDeletingTextOnLostVisibility,
+              toggleDeletingTextOnLostVisibilityInit: _deleteTextOnLostVisibility,
             ),
           ),
         );
