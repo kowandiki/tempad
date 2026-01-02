@@ -553,7 +553,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   onPressed: () {
                     widget.setSettingCustomButtonPlacements(true);
                     if (!_useCustomButtonPlacements) {
-                      widget.toggleUsingCustomButtonPlacements;
+                      widget.toggleUsingCustomButtonPlacements();
                     }
                     Navigator.pop(context);
                   }, 
