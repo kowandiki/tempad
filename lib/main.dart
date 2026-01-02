@@ -1018,8 +1018,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         // ======================================= //
                         // workspaces / prepared phrases pages
                         ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Globals.appButtonColor,
+                            foregroundColor: Globals.appColor,
+                          ),
                           onPressed: _changeTextWorkspace, 
-                          child: Text("ws $_currentWorkspace")
+                          child: RichText(
+                            text: TextSpan(
+                              text: "WS $_currentWorkspace",
+                              style: TextStyle(color: Globals.appColor, fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ),
                         // ======================================= //
 
