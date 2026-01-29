@@ -745,21 +745,28 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       toggleDeletingTextOnLostVisibility: _toggleDeletingTextOnLostVisibility,
       toggleDeletingTextOnLostVisibilityInit: _deleteTextOnLostVisibility,
     );
+
+    // =================
+    // TTS BUTTON
+    // =================
     Widget ttsButton = GestureDetector(
       onTap: _speakText,
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_ttsButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.campaign,
+          color: Globals.appButtonColor,
+        ),
+      )
+    );
+
+    Widget fakeTtsButton = GestureDetector(
       onVerticalDragUpdate: (dragUpdateDetails) {
         if (_setCustomButtonPlacements) {
           if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
             _ttsButtonOffset = dragUpdateDetails.localPosition.dy;
           }
           setState((){});
-        } else {
-          _speakText();
-        }
-      },
-      onVerticalDragStart: (e) {
-        if (!_setCustomButtonPlacements) {
-          _speakText();
         }
       },
       child: Padding(
@@ -771,21 +778,27 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       )
     );
     
+    // =================
+    // INCREASE FONT SIZE
+    // =================
     Widget increaseFontSizeButton = GestureDetector(
       onTap: _incrementFontSize,
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_increaseFontSizeButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.add,
+          color: Globals.appButtonColor
+        ),
+      ),
+    );
+
+    Widget fakeIncreaseFontSizeButton =  GestureDetector(
       onVerticalDragUpdate: (dragUpdateDetails) {
         if (_setCustomButtonPlacements) {
           if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
             _increaseFontSizeButtonOffset = dragUpdateDetails.localPosition.dy;
           }
           setState((){});
-        } else {
-          _incrementFontSize();
-        }
-      },
-      onVerticalDragStart: (e) {
-        if (!_setCustomButtonPlacements) {
-          _incrementFontSize();
         }
       },
       child: Padding(
@@ -797,16 +810,27 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       ),
     );
 
+    // =================
+    // DECREASE FONT SIZE
+    // =================
     Widget decreaseFontSizeButton = GestureDetector(
       onTap: _decrementFontSize,
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_decreaseFontSizeButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.remove,
+          color: Globals.appButtonColor
+        ),
+      )
+    );
+    
+    Widget fakeDecreaseFontSizeButton = GestureDetector(
       onVerticalDragUpdate: (dragUpdateDetails) {
         if (_setCustomButtonPlacements) {
           if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
             _decreaseFontSizeButtonOffset = dragUpdateDetails.localPosition.dy;
           }
           setState((){});
-        } else {
-          _decrementFontSize();
         }
       },
       onVerticalDragStart: (e) {
@@ -823,9 +847,24 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       )
     );
 
+    // =================
+    // SELECT IMAGE
+    // =================
     Widget selectImageButton = GestureDetector(
-      // onTap: _pickAndAddPictureFromGallery,
-      // onLongPress: _pickAndAddPictureFromCamera,
+      onTap: () => showDialog(
+        context: context,
+        builder: (BuildContext context) => getImageSource(),
+      ),
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_cameraButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.add_a_photo,
+          color: Globals.appButtonColor
+        ),
+      )
+    );
+
+    Widget fakeSelectImageButton = GestureDetector(
       onTap: () => showDialog(
         context: context,
         builder: (BuildContext context) => getImageSource(),
@@ -836,13 +875,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             _cameraButtonOffset = dragUpdateDetails.localPosition.dy;
           }
           setState((){});
-        } else {
-          _pickAndAddPictureFromGallery();
-        }
-      },
-      onVerticalDragStart: (e) {
-        if (!_setCustomButtonPlacements) {
-          _pickAndAddPictureFromGallery();
         }
       },
       child: Padding(
@@ -854,6 +886,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       )
     );
 
+    // =================
+    // SETTINGS
+    // =================
     Widget settingsButton = GestureDetector(
       onTap: () async {
         // await so that we can call setState after the return in case the user is setting custom button placements
@@ -863,20 +898,25 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         );
         setState((){});
       },
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_settingsButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.settings,
+          color: Globals.appButtonColor
+        ),
+      ),
+    );
+
+    Widget fakeSettingsButton = GestureDetector(
+      onTap: () {
+        _setCustomButtonPlacements = false;
+        setState((){});
+      },
       onVerticalDragUpdate: (dragUpdateDetails) {
         if (_setCustomButtonPlacements) {
           if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height * 0.7) {
             _settingsButtonOffset = dragUpdateDetails.localPosition.dy;
           }
-          setState((){});
-        }
-      },
-      onVerticalDragStart: (e) async {
-        if (!_setCustomButtonPlacements) {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => settingsPageInstance,),
-          );
           setState((){});
         }
       },
@@ -889,19 +929,27 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       ),
     );
 
+    // =================
+    // UNDO BUTTON
+    // =================
     Widget undoButton = GestureDetector(
       onTap: _restoreText,
+      child: Padding(
+        padding: EdgeInsetsGeometry.fromLTRB(padding, (_undoButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.undo,
+          color: Globals.appButtonColor
+        ),
+      ),
+    );
+
+    Widget fakeUndoButton = GestureDetector(
       onVerticalDragUpdate: (dragUpdateDetails) {
         if (_setCustomButtonPlacements) {
           if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
             _undoButtonOffset = dragUpdateDetails.localPosition.dy;
           }
           setState((){});
-        }
-      },
-      onVerticalDragStart: (e) {
-        if (!_setCustomButtonPlacements) {
-          _restoreText();
         }
       },
       child: Padding(
@@ -913,8 +961,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       ),
     );
 
+    // =================
+    // DELETE BUTTON
+    // =================
     Widget deleteButton = GestureDetector(
       onTap: _clearText,
+      child: Padding(padding: EdgeInsetsGeometry.fromLTRB(padding, (_deleteButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
+        child: Icon(
+          Icons.delete_forever,
+          color: Globals.appButtonColor
+        ),
+      ),
+    );
+
+    Widget fakeDeleteButton = GestureDetector(
       onVerticalDragUpdate: (dragUpdateDetails) {
         if (_setCustomButtonPlacements) {
           if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
@@ -923,13 +983,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           setState((){});
         }
       },
-      onVerticalDragStart: (e) {
-        if (!_setCustomButtonPlacements) {
-          _clearText();
-        }
-      },
       child: Padding(padding: EdgeInsetsGeometry.fromLTRB(padding, (_deleteButtonOffset*(_useCustomButtonPlacements ? 1 : 0))+padding, padding, padding),
-      child: Icon(
+        child: Icon(
           Icons.delete_forever,
           color: Globals.appButtonColor
         ),
@@ -1143,7 +1198,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             
             // Button Bar on the right
             Visibility(
-              visible: !_useCustomButtonPlacements,
+              visible: !_useCustomButtonPlacements && !_setCustomButtonPlacements,
               child: Container(
                 color: Globals.appColor,
                 child: Column(
@@ -1179,7 +1234,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
             // Alternative button bar that uses custom user placements
             Visibility(
-              visible: _useCustomButtonPlacements,
+              visible: _useCustomButtonPlacements && !_setCustomButtonPlacements,
               child: Container(
                 color: Globals.appColor, 
                 child: Column(
@@ -1199,6 +1254,30 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 )
               )
             ),
+
+            // Third alternative for when setting custom user placements
+            // necessary to improve button press reliability
+            Visibility(
+              visible: _setCustomButtonPlacements,
+              child: Container(
+                color: Globals.appColor, 
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        fakeTtsButton,
+                        fakeIncreaseFontSizeButton,
+                        fakeDecreaseFontSizeButton,
+                        fakeSelectImageButton,
+                        fakeUndoButton,
+                        fakeDeleteButton,
+                        fakeSettingsButton, // have last so its always accessible
+                      ]
+                    ),
+                  ]
+                )
+              )
+            )
           ],
         ),
       ),
