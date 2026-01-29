@@ -648,6 +648,76 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     await prefs.setBool("deleteTextOnLostVisibility", _deleteTextOnLostVisibility);
   }
 
+  AlertDialog getImageSource() {
+    
+    return AlertDialog(
+      backgroundColor: Globals.appColor,
+      title: RichText(
+        text: TextSpan(
+          text: "Image Source",
+          style: TextStyle(color: Globals.appButtonColor, fontSize: Globals.titleTextSize, fontWeight: FontWeight.bold)
+        )  
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Globals.appButtonColor),
+              onPressed: () {
+                _pickAndAddPictureFromCamera();
+                Navigator.pop(context);
+              }, 
+              child: Row(
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      text: "Camera",
+                      style: TextStyle(color: Globals.appColor, fontSize: Globals.bodyTextSize, fontWeight: FontWeight.bold)
+                    )  
+                  ),
+                  Expanded(child: Container()),
+                  Icon(
+                    Icons.add_a_photo,
+                    color: Globals.appColor,
+                  ),
+                ]
+              )
+            ),
+          ),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Globals.appButtonColor),
+              onPressed: () {
+                _pickAndAddPictureFromGallery();
+                Navigator.pop(context);
+              }, 
+              child: Row(
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      text: "Gallery",
+                      style: TextStyle(color: Globals.appColor, fontSize: Globals.bodyTextSize, fontWeight: FontWeight.bold)
+                    )  
+                  ),
+                  Expanded(child: Container()),
+                  Icon(
+                    Icons.image,
+                    color: Globals.appColor,
+                  ),
+                ]
+              )
+            ),
+          ),
+          
+        ]
+      )
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -754,8 +824,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
 
     Widget selectImageButton = GestureDetector(
-      onTap: _pickAndAddPictureFromGallery,
-      onLongPress: _pickAndAddPictureFromCamera,
+      // onTap: _pickAndAddPictureFromGallery,
+      // onLongPress: _pickAndAddPictureFromCamera,
+      onTap: () => showDialog(
+        context: context,
+        builder: (BuildContext context) => getImageSource(),
+      ),
       onVerticalDragUpdate: (dragUpdateDetails) {
         if (_setCustomButtonPlacements) {
           if (dragUpdateDetails.localPosition.dy > 0 && dragUpdateDetails.localPosition.dy < MediaQuery.sizeOf(context).height) {
@@ -941,7 +1015,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                   child: RichText(
                                     text: TextSpan(
                                       text: "Hold and drag the icons on the side to move them up or down into your preferred layout. Once you're happy with the layout, just click on the settings button again. \n\nNote: Make sure the settings button always remains accessible",
-                                      style: TextStyle(color: Globals.appButtonColor, fontSize: 20.0),
+                                      style: TextStyle(color: Globals.appButtonColor, fontSize: Globals.bodyTextSize),
                                     ),
                                   ),
                                 )

@@ -20,7 +20,7 @@ class ImageView extends StatelessWidget {
         title: RichText(
           text: TextSpan(
             text: "Image View",
-            style: TextStyle(color: Globals.appButtonColor, fontSize: 25.0),
+            style: TextStyle(color: Globals.appButtonColor, fontSize: Globals.titleTextSize),
           ),
         ),
         backgroundColor: Globals.appColor,

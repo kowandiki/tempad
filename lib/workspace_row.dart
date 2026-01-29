@@ -44,7 +44,7 @@ class _WorkspaceRowState extends State<WorkspaceRow> {
                   text: "Workspace ${widget.index}",
                   style: TextStyle(
                     color: Globals.appButtonColor,
-                    fontSize: 16,
+                    fontSize: Globals.bodyTextSize,
                   )
                 )
               ),

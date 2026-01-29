@@ -191,7 +191,7 @@ class _SettingsPageState extends State<SettingsPage> {
         title: RichText(
           text: TextSpan(
             text: "Settings",
-            style: TextStyle(color: appButtonColor, fontSize: 25.0),
+            style: TextStyle(color: appButtonColor, fontSize: Globals.titleTextSize),
           ),
         ),
         backgroundColor: appColor,

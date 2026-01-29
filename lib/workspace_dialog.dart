@@ -45,7 +45,7 @@ class WorkspaceDialog extends StatelessWidget {
                 text: "Select Workspace",
                 style: TextStyle(
                   color: Globals.appButtonColor,
-                  fontSize: 22,
+                  fontSize: Globals.titleTextSize,
                 )
               )
             ),
